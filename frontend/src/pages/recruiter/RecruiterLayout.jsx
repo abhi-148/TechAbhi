@@ -23,17 +23,40 @@ import {
   Plus,
   ShieldAlert,
   ShieldCheck,
-  UserRound,
   X,
 } from 'lucide-react';
+
 import { api, REC_KEY } from '../../lib/api';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', to: '/recruiter/dashboard', icon: LayoutDashboard, end: true },
-  { label: 'My jobs', to: '/recruiter/jobs', icon: BriefcaseBusiness },
-  { label: 'New job', to: '/recruiter/jobs/new', icon: Plus, special: true, end: true },
-  { label: 'Applications', to: '/recruiter/applications', icon: FileText },
-  { label: 'Company profile', to: '/recruiter/profile', icon: Building2 },
+  {
+    label: 'Dashboard',
+    to: '/recruiter/dashboard',
+    icon: LayoutDashboard,
+    end: true,
+  },
+  {
+    label: 'My jobs',
+    to: '/recruiter/jobs',
+    icon: BriefcaseBusiness,
+  },
+  {
+    label: 'New job',
+    to: '/recruiter/jobs/new',
+    icon: Plus,
+    special: true,
+    end: true,
+  },
+  {
+    label: 'Applications',
+    to: '/recruiter/applications',
+    icon: FileText,
+  },
+  {
+    label: 'Company profile',
+    to: '/recruiter/profile',
+    icon: Building2,
+  },
 ];
 
 function LoadingScreen() {
@@ -42,8 +65,14 @@ function LoadingScreen() {
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
         <LoaderCircle size={28} className="animate-spin" />
       </div>
-      <h2 className="mt-4 font-bold text-slate-900">Loading recruiter workspace</h2>
-      <p className="mt-1 text-sm text-slate-500">Checking your account details...</p>
+
+      <h2 className="mt-4 font-bold text-slate-900">
+        Loading recruiter workspace
+      </h2>
+
+      <p className="mt-1 text-sm text-slate-500">
+        Checking your account details...
+      </p>
     </div>
   );
 }
@@ -52,19 +81,22 @@ function AccountStatus({ me, onLogout }) {
   const messages = {
     pending: {
       title: 'Your account is under review',
-      description: 'Our team manually reviews new recruiter registrations. Please check back after your account has been reviewed.',
+      description:
+        'Our team manually reviews new recruiter registrations. Please check back after your account has been reviewed.',
       icon: Clock3,
       color: 'amber',
     },
     rejected: {
       title: 'Registration not approved',
-      description: 'Your recruiter registration was not approved. Please review the reason below if one has been provided.',
+      description:
+        'Your recruiter registration was not approved. Please review the reason below if one has been provided.',
       icon: ShieldAlert,
       color: 'rose',
     },
     suspended: {
       title: 'Account suspended',
-      description: 'Your recruiter account has been suspended. Your live jobs have been closed.',
+      description:
+        'Your recruiter account has been suspended. Your live jobs have been closed.',
       icon: ShieldAlert,
       color: 'rose',
     },
@@ -72,12 +104,14 @@ function AccountStatus({ me, onLogout }) {
 
   const config = messages[me.status] || {
     title: `Account ${me.status || 'unavailable'}`,
-    description: 'Your recruiter workspace is currently unavailable. Please contact the TechAbhi team for assistance.',
+    description:
+      'Your recruiter workspace is currently unavailable. Please contact the TechAbhi team for assistance.',
     icon: CircleHelp,
     color: 'slate',
   };
 
   const Icon = config.icon;
+
   const tones = {
     amber: {
       icon: 'bg-amber-100 text-amber-700',
@@ -92,6 +126,7 @@ function AccountStatus({ me, onLogout }) {
       panel: 'border-slate-200 bg-slate-50 text-slate-800',
     },
   };
+
   const tone = tones[config.color] || tones.slate;
 
   return (
@@ -105,27 +140,42 @@ function AccountStatus({ me, onLogout }) {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/10">
               <BriefcaseBusiness size={24} />
             </div>
+
             <div>
               <p className="text-lg font-black">TechAbhi</p>
-              <p className="text-xs text-indigo-200">Recruiter workspace</p>
+              <p className="text-xs text-indigo-200">
+                Recruiter workspace
+              </p>
             </div>
           </div>
         </div>
 
         <div className="p-6 sm:p-9">
-          <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${tone.icon}`}>
+          <div
+            className={`flex h-14 w-14 items-center justify-center rounded-2xl ${tone.icon}`}
+          >
             <Icon size={27} />
           </div>
 
           <h1 className="mt-5 text-2xl font-black tracking-tight text-slate-950">
             {config.title}
           </h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{config.description}</p>
+
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            {config.description}
+          </p>
 
           <div className={`mt-6 rounded-2xl border p-4 ${tone.panel}`}>
-            <p className="text-xs font-bold uppercase tracking-wide opacity-70">Account details</p>
-            <p className="mt-2 font-bold">{me.company_name || 'Company not provided'}</p>
+            <p className="text-xs font-bold uppercase tracking-wide opacity-70">
+              Account details
+            </p>
+
+            <p className="mt-2 font-bold">
+              {me.company_name || 'Company not provided'}
+            </p>
+
             <p className="mt-1 break-all text-sm">{me.email}</p>
+
             {me.status_reason && (
               <p className="mt-3 border-t border-current/10 pt-3 text-sm leading-6">
                 <strong>Reason:</strong> {me.status_reason}
@@ -135,9 +185,13 @@ function AccountStatus({ me, onLogout }) {
 
           {me.status === 'pending' && (
             <div className="mt-5 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <ShieldCheck size={19} className="mt-0.5 shrink-0 text-indigo-600" />
+              <ShieldCheck
+                size={19}
+                className="mt-0.5 shrink-0 text-indigo-600"
+              />
               <p className="text-xs leading-5 text-slate-600">
-                Account review helps maintain trust and quality across recruiter job postings.
+                Account review helps maintain trust and quality across
+                recruiter job postings.
               </p>
             </div>
           )}
@@ -147,7 +201,8 @@ function AccountStatus({ me, onLogout }) {
             onClick={onLogout}
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
           >
-            <LogOut size={17} /> Log out
+            <LogOut size={17} />
+            Log out
           </button>
         </div>
       </section>
@@ -159,6 +214,7 @@ export default function RecruiterLayout() {
   const [me, setMe] = useState(null);
   const [bad, setBad] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
   const nav = useNavigate();
   const location = useLocation();
 
@@ -167,6 +223,7 @@ export default function RecruiterLayout() {
 
     if (!localStorage.getItem(REC_KEY)) {
       setBad(true);
+
       return () => {
         active = false;
       };
@@ -174,7 +231,14 @@ export default function RecruiterLayout() {
 
     api('/recruiter/me', { recruiter: true })
       .then((data) => {
-        if (active) setMe(data.recruiter);
+        if (!active) return;
+
+        if (!data?.recruiter) {
+          setBad(true);
+          return;
+        }
+
+        setMe(data.recruiter);
       })
       .catch(() => {
         if (active) setBad(true);
@@ -189,13 +253,30 @@ export default function RecruiterLayout() {
     setMobileOpen(false);
   }, [location.pathname, location.search]);
 
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setMobileOpen(false);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mobileOpen]);
+
   const logout = () => {
     localStorage.removeItem(REC_KEY);
-    nav('/');
+    nav('/recruiter/login', { replace: true });
   };
 
-  if (bad) return <Navigate to="/recruiter/login" replace />;
-  if (!me) return <LoadingScreen />;
+  if (bad) {
+    return <Navigate to="/recruiter/login" replace />;
+  }
+
+  if (!me) {
+    return <LoadingScreen />;
+  }
 
   if (me.status !== 'approved') {
     return <AccountStatus me={me} onLogout={logout} />;
@@ -209,11 +290,19 @@ export default function RecruiterLayout() {
     .join('');
 
   const sidebarLink = ({ isActive }) =>
-    `group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition ${
+    `group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 ${
       isActive
         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-950/20'
         : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
     }`;
+
+  const currentPage =
+    NAV_ITEMS.find((item) =>
+      item.end
+        ? location.pathname === item.to
+        : location.pathname === item.to ||
+          location.pathname.startsWith(`${item.to}/`)
+    )?.label || 'Recruiter workspace';
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50">
@@ -228,18 +317,27 @@ export default function RecruiterLayout() {
 
       <div className="mx-auto flex w-full max-w-[1600px]">
         <aside
+          aria-label="Recruiter navigation"
           className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:sticky lg:top-0 lg:z-20 lg:h-screen lg:translate-x-0 ${
             mobileOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex h-20 items-center justify-between border-b border-slate-100 px-5">
-            <NavLink to="/recruiter/dashboard" className="flex items-center gap-3">
+            <NavLink
+              to="/recruiter/dashboard"
+              className="flex items-center gap-3"
+            >
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white shadow-lg shadow-indigo-600/20">
                 <BriefcaseBusiness size={22} />
               </div>
+
               <div>
-                <p className="text-lg font-black tracking-tight text-slate-950">TechAbhi</p>
-                <p className="text-[11px] font-medium text-slate-500">Recruiter workspace</p>
+                <p className="text-lg font-black tracking-tight text-slate-950">
+                  TechAbhi
+                </p>
+                <p className="text-[11px] font-medium text-slate-500">
+                  Recruiter workspace
+                </p>
               </div>
             </NavLink>
 
@@ -258,13 +356,17 @@ export default function RecruiterLayout() {
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-sm font-black text-white">
                 {initials || 'R'}
               </div>
+
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-slate-900">
                   {me.company_name || me.full_name || 'Recruiter'}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-slate-500">{me.email}</p>
+                <p className="mt-0.5 truncate text-xs text-slate-500">
+                  {me.email}
+                </p>
                 <p className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
-                  <CheckCircle2 size={12} /> Approved account
+                  <CheckCircle2 size={12} />
+                  Approved account
                 </p>
               </div>
             </div>
@@ -287,12 +389,12 @@ export default function RecruiterLayout() {
                 >
                   <Icon size={19} className="shrink-0" />
                   <span className="flex-1">{item.label}</span>
-                  {item.special && (
+
+                  {item.special ? (
                     <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px] font-bold">
                       NEW
                     </span>
-                  )}
-                  {!item.special && (
+                  ) : (
                     <ChevronRight size={15} className="ml-auto opacity-40" />
                   )}
                 </NavLink>
@@ -330,20 +432,16 @@ export default function RecruiterLayout() {
                 <button
                   type="button"
                   aria-label="Open navigation menu"
+                  aria-expanded={mobileOpen}
                   onClick={() => setMobileOpen(true)}
-                  className="rounded-xl border border-slate-200 p-2.5 text-slate-700 transition hover:bg-slate-50 lg:hidden"
+                  className="rounded-xl border border-slate-200 p-2.5 text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 lg:hidden"
                 >
                   <Menu size={20} />
                 </button>
 
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-slate-900">
-                    {NAV_ITEMS.find((item) =>
-                      item.end
-                        ? location.pathname === item.to
-                        : location.pathname === item.to ||
-                          location.pathname.startsWith(item.to + '/')
-                    )?.label || 'Recruiter workspace'}
+                    {currentPage}
                   </p>
                   <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
                     Manage your recruitment activity
@@ -357,7 +455,10 @@ export default function RecruiterLayout() {
                   Approved
                 </span>
 
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700">
+                <div
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-xs font-black text-indigo-700"
+                  title={me.company_name || me.full_name || 'Recruiter'}
+                >
                   {initials || 'R'}
                 </div>
               </div>
@@ -370,7 +471,9 @@ export default function RecruiterLayout() {
 
           <footer className="px-4 pb-6 sm:px-6 lg:px-8">
             <div className="flex flex-col justify-between gap-2 border-t border-slate-200 pt-4 text-xs text-slate-400 sm:flex-row">
-              <p>© {new Date().getFullYear()} TechAbhi · Recruiter workspace</p>
+              <p>
+                © {new Date().getFullYear()} TechAbhi · Recruiter workspace
+              </p>
               <p>Keep hiring fair, professional, and job-related.</p>
             </div>
           </footer>

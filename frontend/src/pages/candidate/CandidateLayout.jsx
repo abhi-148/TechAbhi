@@ -69,7 +69,11 @@ const NAV_ITEMS = [
 function LoadingScreen() {
   return (
     <main className="flex min-h-[60vh] items-center justify-center bg-[#f7f8fc] px-4">
-      <div className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <div
+        className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm"
+        role="status"
+        aria-live="polite"
+      >
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
           <ShieldCheck size={27} />
         </div>
@@ -96,6 +100,7 @@ function Brand({ onNavigate }) {
       to="/"
       onClick={onNavigate}
       className="group inline-flex items-center gap-3"
+      aria-label="TechAbhi home"
     >
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-600/20 transition group-hover:scale-105">
         <BriefcaseBusiness size={20} />
@@ -161,7 +166,10 @@ function SidebarNav({ onNavigate }) {
               </span>
 
               {isActive && (
-                <ChevronRight size={16} className="shrink-0 text-indigo-500" />
+                <ChevronRight
+                  size={16}
+                  className="shrink-0 text-indigo-500"
+                />
               )}
             </>
           )}
@@ -201,7 +209,7 @@ function SidebarFooter({ onLogout, onNavigate, busy }) {
         type="button"
         onClick={onLogout}
         disabled={busy}
-        className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-500 transition hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+        className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-500 transition hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <LogOut size={18} />
         {busy ? 'Logging out…' : 'Log out'}
@@ -221,8 +229,11 @@ export default function CandidateLayout() {
   useEffect(() => {
     let active = true;
 
-    if (!localStorage.getItem(CAND_KEY)) {
+    const token = localStorage.getItem(CAND_KEY);
+
+    if (!token) {
       setOk(false);
+
       return () => {
         active = false;
       };
@@ -233,7 +244,10 @@ export default function CandidateLayout() {
         if (active) setOk(true);
       })
       .catch(() => {
-        if (active) setOk(false);
+        if (active) {
+          localStorage.removeItem(CAND_KEY);
+          setOk(false);
+        }
       });
 
     return () => {
@@ -272,7 +286,9 @@ export default function CandidateLayout() {
   if (!ok) {
     return (
       <Navigate
-        to={`/candidate/login?next=${encodeURIComponent(loc.pathname + loc.search)}`}
+        to={`/candidate/login?next=${encodeURIComponent(
+          loc.pathname + loc.search
+        )}`}
         replace
       />
     );
@@ -287,9 +303,10 @@ export default function CandidateLayout() {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 lg:hidden"
               aria-label="Open candidate menu"
               aria-expanded={mobileOpen}
+              aria-controls="candidate-mobile-navigation"
             >
               <Menu size={20} />
             </button>
@@ -315,6 +332,7 @@ export default function CandidateLayout() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
                 <CircleUserRound size={18} />
               </span>
+
               <span className="hidden text-xs font-semibold text-slate-700 sm:inline">
                 My account
               </span>
@@ -333,14 +351,18 @@ export default function CandidateLayout() {
             onClick={() => setMobileOpen(false)}
           />
 
-          <aside className="absolute inset-y-0 left-0 flex w-[min(88vw,340px)] flex-col overflow-y-auto bg-white p-5 shadow-2xl">
+          <aside
+            id="candidate-mobile-navigation"
+            className="absolute inset-y-0 left-0 flex w-[min(88vw,340px)] flex-col overflow-y-auto bg-white p-5 shadow-2xl"
+            aria-label="Mobile candidate menu"
+          >
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-5">
               <Brand onNavigate={() => setMobileOpen(false)} />
 
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 aria-label="Close candidate menu"
               >
                 <X size={19} />
@@ -371,15 +393,29 @@ export default function CandidateLayout() {
           <Outlet />
 
           <footer className="mt-10 flex flex-col justify-between gap-3 border-t border-slate-200/80 py-5 text-xs text-slate-400 sm:flex-row sm:items-center">
-            <p>© {new Date().getFullYear()} TechAbhi. Keep moving forward.</p>
+            <p>
+              © {new Date().getFullYear()} TechAbhi. Keep moving forward.
+            </p>
+
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <NavLink to="/privacy" className="transition hover:text-indigo-600">
+              <NavLink
+                to="/privacy"
+                className="transition hover:text-indigo-600"
+              >
                 Privacy
               </NavLink>
-              <NavLink to="/terms" className="transition hover:text-indigo-600">
+
+              <NavLink
+                to="/terms"
+                className="transition hover:text-indigo-600"
+              >
                 Terms
               </NavLink>
-              <NavLink to="/" className="inline-flex items-center gap-1 transition hover:text-indigo-600">
+
+              <NavLink
+                to="/"
+                className="inline-flex items-center gap-1 transition hover:text-indigo-600"
+              >
                 <ArrowLeft size={12} />
                 Main website
               </NavLink>

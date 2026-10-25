@@ -1,12 +1,12 @@
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  BriefcaseBusiness,
   Bookmark,
-  ChartNoAxesColumnIncreasing,
+  BriefcaseBusiness,
   CheckCircle2,
+  ChartNoAxesColumnIncreasing,
   CircleUserRound,
   Clock3,
   FileText,
@@ -18,27 +18,43 @@ import {
   Target,
   UserRound,
   AlertCircle,
+  MapPin,
+  Zap,
+  ChevronRight,
 } from 'lucide-react';
 
 import { api } from '../../lib/api';
 import JobCard from '../../components/JobCard';
 
-function StatCard({ icon: Icon, label, value, to, color = 'indigo', detail }) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  to,
+  color = 'indigo',
+  detail,
+}) {
   const colors = {
     indigo: 'bg-indigo-50 text-indigo-600 ring-indigo-100',
     violet: 'bg-violet-50 text-violet-600 ring-violet-100',
     sky: 'bg-sky-50 text-sky-600 ring-sky-100',
+    emerald: 'bg-emerald-50 text-emerald-600 ring-emerald-100',
   };
 
   return (
     <Link
       to={to}
-      className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-950/5"
+      className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-950/5"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className={`flex h-11 w-11 items-center justify-center rounded-xl ring-1 ${colors[color]}`}>
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-xl ring-1 ${
+            colors[color] || colors.indigo
+          }`}
+        >
           <Icon size={21} />
         </div>
+
         <ArrowRight
           size={17}
           className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-indigo-600"
@@ -46,49 +62,115 @@ function StatCard({ icon: Icon, label, value, to, color = 'indigo', detail }) {
       </div>
 
       <p className="mt-5 text-sm font-medium text-slate-500">{label}</p>
+
       <p className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">
-        {value ?? '—'}
+        {value ?? 0}
       </p>
-      {detail && <p className="mt-2 text-xs leading-5 text-slate-500">{detail}</p>}
+
+      {detail && (
+        <p className="mt-2 text-xs leading-5 text-slate-500">{detail}</p>
+      )}
     </Link>
   );
 }
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="h-52 animate-pulse rounded-3xl bg-slate-200" />
+    <div className="space-y-7 animate-pulse">
+      <div className="h-64 rounded-3xl bg-slate-200" />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map((item) => (
-          <div key={item} className="h-40 animate-pulse rounded-2xl bg-slate-200" />
+          <div key={item} className="h-40 rounded-2xl bg-slate-200" />
         ))}
       </div>
-      <div className="h-56 animate-pulse rounded-2xl bg-slate-200" />
+
+      <div className="h-64 rounded-2xl bg-slate-200" />
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        {[1, 2].map((item) => (
+          <div key={item} className="h-56 rounded-2xl bg-slate-200" />
+        ))}
+      </div>
     </div>
   );
 }
 
 function ErrorState({ message, onRetry }) {
   return (
-    <div className="rounded-2xl border border-rose-200 bg-white p-8 text-center shadow-sm">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
-        <AlertCircle size={24} />
+    <div className="rounded-3xl border border-rose-200 bg-white p-8 text-center shadow-sm sm:p-12">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+        <AlertCircle size={26} />
       </div>
-      <h2 className="mt-4 text-xl font-bold text-slate-900">
-        Dashboard couldn’t load
+
+      <h2 className="mt-5 text-xl font-extrabold text-slate-900">
+        Dashboard couldn't load
       </h2>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+
+      <p className="mx-auto mt-2 max-w-md break-words text-sm leading-6 text-slate-500">
         {message || 'Something went wrong. Please try again.'}
       </p>
+
       <button
         type="button"
         onClick={onRetry}
-        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700"
+        className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20"
       >
         <RefreshCw size={16} />
         Try again
       </button>
     </div>
+  );
+}
+
+function SectionHeading({ eyebrow, title, description, action }) {
+  return (
+    <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div>
+        {eyebrow && (
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">
+            {eyebrow}
+          </p>
+        )}
+
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">
+          {title}
+        </h2>
+
+        {description && (
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            {description}
+          </p>
+        )}
+      </div>
+
+      {action}
+    </div>
+  );
+}
+
+function QuickLink({ icon: Icon, title, description, to }) {
+  return (
+    <Link
+      to={to}
+      className="group flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-indigo-200 hover:bg-indigo-50/50 hover:shadow-sm"
+    >
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition group-hover:bg-indigo-100 group-hover:text-indigo-700">
+        <Icon size={20} />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold text-slate-800">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          {description}
+        </p>
+      </div>
+
+      <ChevronRight
+        size={17}
+        className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-indigo-600"
+      />
+    </Link>
   );
 }
 
@@ -98,60 +180,113 @@ export default function CandidateDashboardPage() {
   const [err, setErr] = useState('');
   const [retry, setRetry] = useState(0);
 
+  const loadDashboard = useCallback(async () => {
+    setErr('');
+
+    try {
+      const result = await api('/candidate/dashboard', {
+        candidate: true,
+      });
+
+      setD(result);
+    } catch (error) {
+      setErr(error.message || 'Unable to load your dashboard.');
+    }
+  }, []);
+
+  const loadRecommendations = useCallback(async () => {
+    setRec(null);
+
+    try {
+      const result = await api('/candidate/recommendations', {
+        candidate: true,
+      });
+
+      setRec(result || { jobs: [] });
+    } catch {
+      setRec({ jobs: [] });
+    }
+  }, []);
+
   useEffect(() => {
     let active = true;
 
     setD(null);
-    setErr('');
     setRec(null);
+    setErr('');
 
-    api('/candidate/dashboard', { candidate: true })
-      .then((result) => {
+    const load = async () => {
+      try {
+        const result = await api('/candidate/dashboard', {
+          candidate: true,
+        });
+
         if (active) setD(result);
-      })
-      .catch((error) => {
-        if (active) setErr(error.message || 'Unable to load your dashboard.');
-      });
+      } catch (error) {
+        if (active) {
+          setErr(error.message || 'Unable to load your dashboard.');
+        }
+      }
 
-    api('/candidate/recommendations', { candidate: true })
-      .then((result) => {
-        if (active) setRec(result);
-      })
-      .catch(() => {
+      try {
+        const result = await api('/candidate/recommendations', {
+          candidate: true,
+        });
+
+        if (active) setRec(result || { jobs: [] });
+      } catch {
         if (active) setRec({ jobs: [] });
-      });
+      }
+    };
+
+    load();
 
     return () => {
       active = false;
     };
   }, [retry]);
 
-  if (err) {
+  if (err && !d) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <ErrorState message={err} onRetry={() => setRetry((n) => n + 1)} />
-      </div>
+      <main className="min-h-screen bg-[#f7f8fc] px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <ErrorState
+            message={err}
+            onRetry={() => setRetry((n) => n + 1)}
+          />
+        </div>
+      </main>
     );
   }
 
   if (!d) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <DashboardSkeleton />
-      </div>
+      <main className="min-h-screen bg-[#f7f8fc] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <DashboardSkeleton />
+        </div>
+      </main>
     );
   }
 
-  const c = d.completeness || { percent: 0, missing: [] };
-  const percent = Math.max(0, Math.min(100, Number(c.percent) || 0));
-  const missing = Array.isArray(c.missing) ? c.missing : [];
+  const completeness = d.completeness || {};
+  const percent = Math.max(
+    0,
+    Math.min(100, Number(completeness.percent) || 0)
+  );
+
+  const missing = Array.isArray(completeness.missing)
+    ? completeness.missing
+    : [];
+
   const jobs = Array.isArray(rec?.jobs) ? rec.jobs : [];
+  const firstName = String(d.full_name || 'there').trim().split(/\s+/)[0];
 
   return (
     <main className="min-h-screen bg-[#f7f8fc] pb-14">
-      <div className="mx-auto max-w-7xl space-y-8 px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 sm:py-9 lg:px-8">
         {/* Welcome hero */}
-        <section className="relative isolate overflow-hidden rounded-3xl bg-[#111735] px-6 py-8 shadow-xl shadow-indigo-950/10 sm:px-9 sm:py-10 lg:px-10">
+        <section className="relative isolate overflow-hidden rounded-3xl bg-[#111735] px-5 py-7 shadow-xl shadow-indigo-950/10 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
           <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
             <div className="absolute -right-12 -top-24 h-72 w-72 rounded-full bg-indigo-500/25 blur-3xl" />
             <div className="absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl" />
@@ -162,45 +297,59 @@ export default function CandidateDashboardPage() {
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] px-3.5 py-2 text-xs font-semibold text-indigo-100">
                 <Sparkles size={14} className="text-violet-300" />
-                CANDIDATE DASHBOARD
+                CANDIDATE WORKSPACE
               </div>
 
-              <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
+              <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Welcome back,{' '}
                 <span className="bg-gradient-to-r from-indigo-300 via-violet-300 to-sky-300 bg-clip-text text-transparent">
-                  {d.full_name}
+                  {firstName}
                 </span>
+                <span className="text-white">.</span>
               </h1>
 
-              <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
-                Your next career opportunity starts here. Keep your profile
-                updated and explore jobs that match your skills.
+              <p className="mt-4 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+                Your next career opportunity starts here. Discover relevant
+                jobs, manage your applications, and keep your profile ready
+                for your next move.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   to="/jobs"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-indigo-950 transition hover:bg-indigo-50"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-indigo-950 transition hover:bg-indigo-50 focus:outline-none focus:ring-4 focus:ring-white/20"
                 >
-                  <Search size={16} />
+                  <Search size={17} />
                   Explore jobs
                   <ArrowRight size={16} />
                 </Link>
 
                 <Link
                   to="/candidate/profile"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 focus:outline-none focus:ring-4 focus:ring-white/20"
                 >
-                  <CircleUserRound size={16} />
+                  <CircleUserRound size={17} />
                   My profile
                 </Link>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-300">
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck size={15} className="text-emerald-300" />
+                  Your candidate workspace
+                </span>
+
+                <span className="inline-flex items-center gap-1.5">
+                  <Zap size={15} className="text-amber-300" />
+                  Keep moving forward
+                </span>
               </div>
             </div>
 
             <div className="hidden shrink-0 items-center justify-center md:flex">
-              <div className="flex h-32 w-32 items-center justify-center rounded-[2rem] border border-white/15 bg-white/[0.07] shadow-2xl backdrop-blur-sm">
-                <div className="flex h-24 w-24 items-center justify-center rounded-[1.6rem] bg-gradient-to-br from-indigo-400 to-violet-500 text-white shadow-lg">
-                  <BriefcaseBusiness size={43} strokeWidth={1.5} />
+              <div className="flex h-36 w-36 items-center justify-center rounded-[2rem] border border-white/15 bg-white/[0.07] shadow-2xl backdrop-blur-sm lg:h-40 lg:w-40">
+                <div className="flex h-28 w-28 items-center justify-center rounded-[1.6rem] bg-gradient-to-br from-indigo-400 to-violet-500 text-white shadow-lg lg:h-32 lg:w-32">
+                  <BriefcaseBusiness size={48} strokeWidth={1.5} />
                 </div>
               </div>
             </div>
@@ -209,14 +358,11 @@ export default function CandidateDashboardPage() {
 
         {/* Dashboard metrics */}
         <section>
-          <div className="mb-4">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">
-              Your overview
-            </p>
-            <h2 className="mt-1 text-xl font-extrabold tracking-tight text-slate-900">
-              Your career at a glance
-            </h2>
-          </div>
+          <SectionHeading
+            eyebrow="Your overview"
+            title="Your career at a glance"
+            description="Your saved opportunities, application activity, and profile progress in one place."
+          />
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
@@ -227,29 +373,35 @@ export default function CandidateDashboardPage() {
               color="violet"
               detail="Opportunities you bookmarked"
             />
+
             <StatCard
               icon={ChartNoAxesColumnIncreasing}
               label="Jobs you're tracking"
               value={d.tracked}
               to="/candidate/applications"
               color="indigo"
-              detail="Keep up with your applications"
+              detail="Review your application activity"
             />
 
             <Link
               to="/candidate/profile"
-              className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-950/5 sm:col-span-2 lg:col-span-1"
+              className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-950/5 sm:col-span-2 lg:col-span-1"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-600 ring-1 ring-sky-100">
                   <UserRound size={21} />
                 </div>
-                <ArrowRight size={17} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-indigo-600" />
+
+                <ArrowRight
+                  size={17}
+                  className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-indigo-600"
+                />
               </div>
 
               <p className="mt-5 text-sm font-medium text-slate-500">
                 Profile completeness
               </p>
+
               <div className="mt-1 flex items-baseline gap-1">
                 <span className="text-3xl font-extrabold tracking-tight text-slate-900">
                   {percent}%
@@ -270,29 +422,42 @@ export default function CandidateDashboardPage() {
                   style={{ width: `${percent}%` }}
                 />
               </div>
+
+              <p className="mt-2 text-xs text-slate-500">
+                {percent >= 100
+                  ? 'Your profile is complete.'
+                  : 'Complete your profile to present yourself better.'}
+              </p>
             </Link>
           </div>
         </section>
 
         {/* Profile improvement */}
-        <section className="grid gap-5 lg:grid-cols-[1.3fr_0.7fr]">
+        <section className="grid items-stretch gap-5 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                   <CircleUserRound size={21} />
                 </div>
+
                 <div>
                   <h2 className="text-lg font-bold text-slate-900">
                     Build a stronger profile
                   </h2>
                   <p className="mt-1 text-sm leading-6 text-slate-500">
-                    Keep your candidate details up to date.
+                    Keep your candidate details accurate and up to date.
                   </p>
                 </div>
               </div>
 
-              <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${percent >= 100 ? 'bg-emerald-50 text-emerald-700' : 'bg-indigo-50 text-indigo-700'}`}>
+              <span
+                className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                  percent >= 100
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-indigo-50 text-indigo-700'
+                }`}
+              >
                 {percent >= 100 ? 'Profile complete' : `${percent}% complete`}
               </span>
             </div>
@@ -309,10 +474,11 @@ export default function CandidateDashboardPage() {
                 <p className="mt-4 text-sm font-semibold text-slate-700">
                   Details you can still add
                 </p>
+
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {missing.map((item) => (
+                  {missing.map((item, index) => (
                     <span
-                      key={item}
+                      key={`${item}-${index}`}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800"
                     >
                       <Clock3 size={13} />
@@ -330,7 +496,7 @@ export default function CandidateDashboardPage() {
 
             <Link
               to="/candidate/profile"
-              className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700"
+              className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20"
             >
               Update my profile
               <ArrowRight size={16} />
@@ -339,6 +505,7 @@ export default function CandidateDashboardPage() {
 
           <div className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 p-6 text-white shadow-lg shadow-indigo-900/10 sm:p-7">
             <div className="pointer-events-none absolute -right-12 -top-12 -z-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-white/10">
               <HeartHandshake size={24} />
             </div>
@@ -346,14 +513,15 @@ export default function CandidateDashboardPage() {
             <h2 className="mt-5 text-xl font-extrabold">
               Need career guidance?
             </h2>
+
             <p className="mt-3 text-sm leading-7 text-indigo-100">
-              If you need help navigating your job search, explore the optional
-              TechAbhi career assistance service.
+              Explore TechAbhi's optional career assistance service if you
+              need help navigating your job search.
             </p>
 
             <Link
               to="/candidate/career-assistance"
-              className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-indigo-700 transition hover:bg-indigo-50"
+              className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-4 focus:ring-white/30"
             >
               Explore assistance
               <ArrowRight size={16} />
@@ -367,50 +535,44 @@ export default function CandidateDashboardPage() {
 
         {/* Recommended jobs */}
         <section>
-          <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-            <div>
-              <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">
-                <Sparkles size={14} />
-                Curated for your journey
-              </div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">
-                Jobs that match your skills
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                Suggestions compare skills on your profile with skills listed
-                for each job. They are not predictions of hiring outcomes.
-              </p>
-            </div>
-
-            <Link
-              to="/jobs"
-              className="inline-flex w-fit items-center gap-2 text-sm font-bold text-indigo-600 transition hover:text-indigo-800"
-            >
-              Browse all jobs
-              <ArrowRight size={16} />
-            </Link>
-          </div>
+          <SectionHeading
+            eyebrow="Curated for your journey"
+            title="Jobs that match your skills"
+            description="Suggestions compare skills on your profile with skills listed for each job. They are not predictions of hiring outcomes."
+            action={
+              <Link
+                to="/jobs"
+                className="inline-flex w-fit items-center gap-2 text-sm font-bold text-indigo-600 transition hover:text-indigo-800"
+              >
+                Browse all jobs
+                <ArrowRight size={16} />
+              </Link>
+            }
+          />
 
           {!rec ? (
             <div className="grid gap-5 sm:grid-cols-2">
               {[1, 2].map((item) => (
-                <div key={item} className="h-56 animate-pulse rounded-2xl bg-slate-200" />
+                <div
+                  key={item}
+                  className="h-56 animate-pulse rounded-2xl bg-slate-200"
+                />
               ))}
             </div>
           ) : (
             <>
               {rec.fallback && (
                 <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                  <div className="mt-0.5 shrink-0">
-                    <Target size={18} />
-                  </div>
+                  <Target size={18} className="mt-0.5 shrink-0" />
+
                   <div>
-                    <p className="font-bold">Let’s improve your matches</p>
+                    <p className="font-bold">Let's improve your matches</p>
                     <p className="mt-1 leading-6">
-                      No skill matches yet. Add skills to your profile to help
+                      No skill matches yet. Add skills to your profile to
                       discover more relevant opportunities. Newest jobs are
                       shown for now.
                     </p>
+
                     <Link
                       to="/candidate/profile"
                       className="mt-2 inline-flex items-center gap-1 font-bold underline underline-offset-4"
@@ -427,12 +589,15 @@ export default function CandidateDashboardPage() {
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
                     <BriefcaseBusiness size={25} />
                   </div>
+
                   <h3 className="mt-4 text-lg font-bold text-slate-900">
                     No open jobs to recommend right now
                   </h3>
-                  <p className="mt-2 text-sm text-slate-500">
+
+                  <p className="mt-2 text-sm leading-6 text-slate-500">
                     Check back later or explore all available opportunities.
                   </p>
+
                   <Link
                     to="/jobs"
                     className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700"
@@ -454,12 +619,13 @@ export default function CandidateDashboardPage() {
                             <CheckCircle2 size={14} />
                             Why this job appears
                           </p>
-                          <p className="mt-1 text-xs leading-5 text-emerald-800">
+
+                          <p className="mt-1 break-words text-xs leading-5 text-emerald-800">
                             {[
                               job.matched_skills?.length
                                 ? `Matching skills: ${job.matched_skills.join(', ')}`
                                 : null,
-                              ...(job.reasons || []),
+                              ...(Array.isArray(job.reasons) ? job.reasons : []),
                             ]
                               .filter(Boolean)
                               .join(' · ')}
@@ -476,50 +642,81 @@ export default function CandidateDashboardPage() {
 
         {/* Quick navigation */}
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="text-lg font-bold text-slate-900">
-            Quick access
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Jump straight to the tools you need.
-          </p>
+          <SectionHeading
+            eyebrow="Your workspace"
+            title="Quick access"
+            description="Jump straight to the tools you need."
+          />
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                label: 'My profile',
-                description: 'Update your candidate details',
-                to: '/candidate/profile',
-                icon: CircleUserRound,
-              },
-              {
-                label: 'Saved jobs',
-                description: 'Revisit bookmarked opportunities',
-                to: '/candidate/saved-jobs',
-                icon: Bookmark,
-              },
-              {
-                label: 'Applications tracker',
-                description: 'Review jobs you are tracking',
-                to: '/candidate/applications',
-                icon: FileText,
-              },
-            ].map(({ label, description, to, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                className="group flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-indigo-200 hover:bg-indigo-50/50"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition group-hover:bg-indigo-100 group-hover:text-indigo-700">
-                  <Icon size={19} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-slate-800">{label}</p>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
-                </div>
-                <ArrowRight size={16} className="shrink-0 text-slate-300 transition group-hover:translate-x-1 group-hover:text-indigo-600" />
-              </Link>
-            ))}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <QuickLink
+              icon={CircleUserRound}
+              title="My profile"
+              description="Update your candidate details"
+              to="/candidate/profile"
+            />
+
+            <QuickLink
+              icon={Bookmark}
+              title="Saved jobs"
+              description="Revisit bookmarked opportunities"
+              to="/candidate/saved-jobs"
+            />
+
+            <QuickLink
+              icon={FileText}
+              title="Applications tracker"
+              description="Review jobs you are tracking"
+              to="/candidate/applications"
+            />
+
+            <QuickLink
+              icon={Search}
+              title="Find opportunities"
+              description="Explore the latest job listings"
+              to="/jobs"
+            />
+
+            <QuickLink
+              icon={HeartHandshake}
+              title="Career assistance"
+              description="Explore available career support"
+              to="/candidate/career-assistance"
+            />
+
+            <QuickLink
+              icon={ShieldCheck}
+              title="Account overview"
+              description="Review and maintain your profile"
+              to="/candidate/profile"
+            />
           </div>
+        </section>
+
+        {/* Bottom call to action */}
+        <section className="flex flex-col justify-between gap-5 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-5 sm:flex-row sm:items-center sm:p-7">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100">
+              <BriefcaseBusiness size={21} />
+            </div>
+
+            <div>
+              <h2 className="font-extrabold text-slate-900">
+                Ready for your next opportunity?
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-slate-500">
+                Explore open positions and find the next step in your career.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to="/jobs"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700"
+          >
+            Explore jobs
+            <ArrowRight size={16} />
+          </Link>
         </section>
       </div>
     </main>

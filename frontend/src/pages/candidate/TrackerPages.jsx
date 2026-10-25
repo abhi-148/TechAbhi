@@ -20,8 +20,9 @@ import {
   UserRoundCheck,
   XCircle,
 } from 'lucide-react';
+
 import { api } from '../../lib/api';
-import { btnGhost, inputCls, fmtDate } from '../../lib/format';
+import { inputCls, fmtDate } from '../../lib/format';
 
 const STATUS = {
   link_opened: 'Opened employer link',
@@ -42,7 +43,7 @@ const SUB = {
   withdrawn: 'Withdrawn',
 };
 
-const statusStyles = {
+const STATUS_STYLES = {
   new: 'bg-sky-50 text-sky-700 ring-sky-200',
   in_review: 'bg-amber-50 text-amber-700 ring-amber-200',
   shortlisted: 'bg-violet-50 text-violet-700 ring-violet-200',
@@ -55,25 +56,73 @@ const statusStyles = {
   offer: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
 };
 
+const cx = (...classes) => classes.filter(Boolean).join(' ');
+
 function useList(path, key) {
   const [items, setItems] = useState(null);
   const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setErr('');
-    return api(path, { candidate: true })
-      .then((data) => setItems(data[key]))
-      .catch((error) => setErr(error.message || 'Unable to load data.'));
+    setLoading(true);
+
+    try {
+      const data = await api(path, { candidate: true });
+
+      if (!Array.isArray(data?.[key])) {
+        throw new Error('The server returned an unexpected response.');
+      }
+
+      setItems(data[key]);
+      return data[key];
+    } catch (error) {
+      setErr(error.message || 'Unable to load data.');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   }, [path, key]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
 
-  return { items, err, load, setItems };
+    api(path, { candidate: true })
+      .then((data) => {
+        if (!active) return;
+
+        if (!Array.isArray(data?.[key])) {
+          throw new Error('The server returned an unexpected response.');
+        }
+
+        setItems(data[key]);
+        setErr('');
+      })
+      .catch((error) => {
+        if (active) {
+          setErr(error.message || 'Unable to load data.');
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [path, key]);
+
+  return { items, err, load, setItems, loading, setErr };
 }
 
-function PageShell({ eyebrow, title, description, icon: Icon, children, count }) {
+function PageShell({
+  eyebrow,
+  title,
+  description,
+  icon: Icon,
+  children,
+  count,
+}) {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-7 pb-10">
       <section className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-900 px-6 py-8 text-white shadow-xl shadow-indigo-950/10 sm:px-9 sm:py-10">
@@ -87,7 +136,11 @@ function PageShell({ eyebrow, title, description, icon: Icon, children, count })
               <Icon size={15} />
               {eyebrow}
             </div>
-            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{title}</h1>
+
+            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+              {title}
+            </h1>
+
             <p className="mt-3 max-w-xl text-sm leading-6 text-indigo-100/85 sm:text-base">
               {description}
             </p>
@@ -98,6 +151,7 @@ function PageShell({ eyebrow, title, description, icon: Icon, children, count })
               <div className="rounded-xl bg-white/10 p-2">
                 <Icon size={21} />
               </div>
+
               <div>
                 <p className="text-2xl font-black">{count}</p>
                 <p className="text-xs text-indigo-100">Total records</p>
@@ -118,8 +172,13 @@ function EmptyState({ icon: Icon, title, description, action }) {
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
         <Icon size={29} />
       </div>
+
       <h2 className="mt-5 text-lg font-bold text-slate-900">{title}</h2>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
+
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+        {description}
+      </p>
+
       {action && (
         <Link
           to="/jobs"
@@ -134,18 +193,32 @@ function EmptyState({ icon: Icon, title, description, action }) {
 
 function ErrorState({ message, onRetry }) {
   return (
-    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
+    <div
+      role="alert"
+      className="rounded-2xl border border-rose-200 bg-rose-50 p-5"
+    >
       <div className="flex items-start gap-3">
-        <XCircle className="mt-0.5 shrink-0 text-rose-600" size={20} />
+        <XCircle
+          className="mt-0.5 shrink-0 text-rose-600"
+          size={20}
+        />
+
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-rose-900">We couldn't load this section</p>
-          <p className="mt-1 break-words text-sm text-rose-700">{message}</p>
+          <p className="font-bold text-rose-900">
+            We couldn't load this section
+          </p>
+
+          <p className="mt-1 break-words text-sm text-rose-700">
+            {message}
+          </p>
+
           <button
             type="button"
             onClick={onRetry}
             className="mt-4 inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
           >
-            <RefreshCw size={15} /> Try again
+            <RefreshCw size={15} />
+            Try again
           </button>
         </div>
       </div>
@@ -155,35 +228,58 @@ function ErrorState({ message, onRetry }) {
 
 function LoadingState() {
   return (
-    <div className="flex min-h-52 flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white text-center">
-      <LoaderCircle className="animate-spin text-indigo-600" size={30} />
-      <p className="mt-4 font-semibold text-slate-800">Loading your information...</p>
+    <div
+      role="status"
+      className="flex min-h-52 flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white text-center"
+    >
+      <LoaderCircle
+        className="animate-spin text-indigo-600"
+        size={30}
+      />
+
+      <p className="mt-4 font-semibold text-slate-800">
+        Loading your information...
+      </p>
+
       <p className="mt-1 text-sm text-slate-500">Just a moment</p>
     </div>
   );
 }
 
 function StatusPill({ status, label }) {
-  const style = statusStyles[status] || 'bg-slate-100 text-slate-700 ring-slate-200';
+  const style =
+    STATUS_STYLES[status] ||
+    'bg-slate-100 text-slate-700 ring-slate-200';
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${style}`}>
+    <span
+      className={cx(
+        'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset',
+        style
+      )}
+    >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {label}
+      {label || 'Status unavailable'}
     </span>
   );
 }
 
 function JobTitle({ job }) {
-  return job.available ? (
+  if (!job.available) {
+    return (
+      <span className="text-base font-bold leading-6 text-slate-500">
+        {job.title || 'Untitled job'}
+      </span>
+    );
+  }
+
+  return (
     <Link
       className="text-base font-bold leading-6 text-slate-900 transition hover:text-indigo-700"
       to={`/jobs/${job.id}`}
     >
-      {job.title}
+      {job.title || 'Untitled job'}
     </Link>
-  ) : (
-    <span className="text-base font-bold leading-6 text-slate-500">{job.title}</span>
   );
 }
 
@@ -193,10 +289,13 @@ function JobIdentity({ job }) {
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-100 text-indigo-700">
         <Building2 size={22} />
       </div>
+
       <div className="min-w-0 flex-1">
         <JobTitle job={job} />
+
         <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
           <span>{job.company || 'Company not specified'}</span>
+
           {job.location && (
             <>
               <span className="text-slate-300">•</span>
@@ -204,49 +303,110 @@ function JobIdentity({ job }) {
             </>
           )}
         </p>
+
         {!job.available && job.status_note && (
-          <p className="mt-2 text-xs font-medium text-amber-700">{job.status_note}</p>
+          <p className="mt-2 text-xs font-medium text-amber-700">
+            {job.status_note}
+          </p>
         )}
       </div>
     </div>
   );
 }
 
-function ActionButton({ children, onClick, disabled, danger = false }) {
+function ActionButton({
+  children,
+  onClick,
+  disabled,
+  danger = false,
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={cx(
+        'inline-flex items-center justify-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50',
         danger
           ? 'border-rose-200 bg-white text-rose-700 hover:bg-rose-50'
           : 'border-slate-200 bg-white text-slate-700 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700'
-      }`}
+      )}
     >
       {children}
     </button>
   );
 }
 
+function InlineError({ message, onClose }) {
+  if (!message) return null;
+
+  return (
+    <div
+      role="alert"
+      className="flex items-start justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
+    >
+      <p className="min-w-0 break-words">{message}</p>
+
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Dismiss error"
+          className="shrink-0 font-bold hover:text-rose-950"
+        >
+          ×
+        </button>
+      )}
+    </div>
+  );
+}
+
+function UpdatedDate({ date }) {
+  if (!date) return null;
+
+  return (
+    <p className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+      <CalendarDays size={14} />
+      Updated {fmtDate(date)}
+    </p>
+  );
+}
+
 export function SavedJobsPage() {
-  const { items, err, load, setItems } = useList('/candidate/saved', 'jobs');
+  const {
+    items,
+    err,
+    load,
+    setItems,
+    loading,
+  } = useList('/candidate/saved', 'jobs');
+
   const [busyId, setBusyId] = useState(null);
   const [actionError, setActionError] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
 
   const remove = async (id) => {
     if (busyId !== null) return;
+
     setActionError('');
+    setActionMessage('');
     setBusyId(id);
 
     try {
-      await api('/candidate/saved/' + id, {
+      await api(`/candidate/saved/${id}`, {
         method: 'DELETE',
         candidate: true,
       });
-      setItems((previous) => previous?.filter((job) => job.id !== id) ?? previous);
+
+      setItems((previous) =>
+        previous?.filter((job) => job.id !== id) ?? previous
+      );
+
+      setActionMessage('Job removed from your saved list.');
     } catch (error) {
-      setActionError(error.message || 'Could not remove this saved job.');
+      setActionError(
+        error.message || 'Could not remove this saved job.'
+      );
     } finally {
       setBusyId(null);
     }
@@ -262,15 +422,23 @@ export function SavedJobsPage() {
     >
       {err && <ErrorState message={err} onRetry={load} />}
 
-      {actionError && (
-        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-          {actionError}
+      <InlineError
+        message={actionError}
+        onClose={() => setActionError('')}
+      />
+
+      {actionMessage && (
+        <div
+          role="status"
+          className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+        >
+          {actionMessage}
         </div>
       )}
 
-      {!items && !err && <LoadingState />}
+      {loading && items === null && <LoadingState />}
 
-      {items?.length === 0 && !err && (
+      {!loading && !err && items?.length === 0 && (
         <EmptyState
           icon={Bookmark}
           title="Your shortlist starts here"
@@ -283,12 +451,20 @@ export function SavedJobsPage() {
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Your shortlist</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                Your shortlist
+              </h2>
+
               <p className="mt-1 text-sm text-slate-500">
-                {items.length} {items.length === 1 ? 'opportunity' : 'opportunities'} saved
+                {items.length}{' '}
+                {items.length === 1 ? 'opportunity' : 'opportunities'} saved
               </p>
             </div>
-            <Link to="/jobs" className="inline-flex items-center gap-2 text-sm font-bold text-indigo-700 hover:text-indigo-900">
+
+            <Link
+              to="/jobs"
+              className="inline-flex items-center gap-2 text-sm font-bold text-indigo-700 hover:text-indigo-900"
+            >
               Find more jobs <ChevronRight size={16} />
             </Link>
           </div>
@@ -297,12 +473,14 @@ export function SavedJobsPage() {
             {items.map((job) => (
               <article
                 key={job.id}
-                className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-950/5 sm:p-5"
+                className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-950/5 sm:p-5"
               >
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                   <div className="min-w-0 flex-1">
                     <JobIdentity job={job} />
+                    <UpdatedDate date={job.updated_at} />
                   </div>
+
                   <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                     {job.available && (
                       <Link
@@ -312,13 +490,17 @@ export function SavedJobsPage() {
                         View job <ExternalLink size={15} />
                       </Link>
                     )}
+
                     <ActionButton
                       danger
-                      disabled={busyId === job.id}
+                      disabled={busyId !== null}
                       onClick={() => remove(job.id)}
                     >
                       {busyId === job.id ? (
-                        <LoaderCircle className="animate-spin" size={16} />
+                        <LoaderCircle
+                          className="animate-spin"
+                          size={16}
+                        />
                       ) : (
                         <Trash2 size={16} />
                       )}
@@ -336,23 +518,42 @@ export function SavedJobsPage() {
 }
 
 export function ApplicationsPage() {
-  const { items, err, load, setItems } = useList('/candidate/applications', 'applications');
+  const {
+    items,
+    err,
+    load,
+    setItems,
+    loading,
+  } = useList('/candidate/applications', 'applications');
+
   const [actionError, setActionError] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
   const [busyId, setBusyId] = useState(null);
 
-  const setStatus = async (id, status) => {
+  const clearMessages = () => {
     setActionError('');
+    setActionMessage('');
+  };
+
+  const setStatus = async (id, status) => {
+    if (busyId !== null) return;
+
+    clearMessages();
     setBusyId(id);
 
     try {
-      await api('/candidate/applications/' + id, {
+      await api(`/candidate/applications/${id}`, {
         method: 'PUT',
         body: { status },
         candidate: true,
       });
+
       await load();
+      setActionMessage('Application tracking status updated.');
     } catch (error) {
-      setActionError(error.message || 'Could not update the application status.');
+      setActionError(
+        error.message || 'Could not update the application status.'
+      );
     } finally {
       setBusyId(null);
     }
@@ -360,29 +561,47 @@ export function ApplicationsPage() {
 
   const remove = async (id) => {
     if (busyId !== null) return;
-    setActionError('');
+
+    const confirmed = window.confirm(
+      'Remove this application tracking record from your list?'
+    );
+
+    if (!confirmed) return;
+
+    clearMessages();
     setBusyId(id);
 
     try {
-      await api('/candidate/applications/' + id, {
+      await api(`/candidate/applications/${id}`, {
         method: 'DELETE',
         candidate: true,
       });
-      setItems((previous) => previous?.filter((application) => application.id !== id) ?? previous);
+
+      setItems((previous) =>
+        previous?.filter((application) => application.id !== id) ??
+        previous
+      );
+
+      setActionMessage('Application record removed.');
     } catch (error) {
-      setActionError(error.message || 'Could not remove this record.');
+      setActionError(
+        error.message || 'Could not remove this record.'
+      );
     } finally {
       setBusyId(null);
     }
   };
 
   const withdraw = async (id) => {
-    if (!window.confirm('Withdraw this application? The employer will no longer hold your details on TechAbhi.')) {
-      return;
-    }
-
     if (busyId !== null) return;
-    setActionError('');
+
+    const confirmed = window.confirm(
+      'Withdraw this application? Please confirm that you want to withdraw before continuing.'
+    );
+
+    if (!confirmed) return;
+
+    clearMessages();
     setBusyId(id);
 
     try {
@@ -390,16 +609,23 @@ export function ApplicationsPage() {
         method: 'POST',
         candidate: true,
       });
+
       await load();
+      setActionMessage('Your withdrawal request has been submitted.');
     } catch (error) {
-      setActionError(error.message || 'Could not withdraw this application.');
+      setActionError(
+        error.message || 'Could not withdraw this application.'
+      );
     } finally {
       setBusyId(null);
     }
   };
 
-  const submittedCount = items?.filter((job) => Boolean(job.sub_status)).length ?? 0;
-  const trackedCount = items?.filter((job) => !job.sub_status).length ?? 0;
+  const employerTracked =
+    items?.filter((job) => !job.sub_status).length ?? 0;
+
+  const platformApplications =
+    items?.filter((job) => Boolean(job.sub_status)).length ?? 0;
 
   return (
     <PageShell
@@ -412,28 +638,49 @@ export function ApplicationsPage() {
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-700"><BriefcaseBusiness size={19} /></div>
+            <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-700">
+              <BriefcaseBusiness size={19} />
+            </div>
+
             <div>
               <p className="text-sm text-slate-500">Total tracked</p>
-              <p className="text-2xl font-black text-slate-900">{items?.length ?? '—'}</p>
+              <p className="text-2xl font-black text-slate-900">
+                {items?.length ?? '—'}
+              </p>
             </div>
           </div>
         </div>
+
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-sky-50 p-2.5 text-sky-700"><ExternalLink size={19} /></div>
+            <div className="rounded-xl bg-sky-50 p-2.5 text-sky-700">
+              <ExternalLink size={19} />
+            </div>
+
             <div>
-              <p className="text-sm text-slate-500">Employer-site activity</p>
-              <p className="text-2xl font-black text-slate-900">{items ? trackedCount : '—'}</p>
+              <p className="text-sm text-slate-500">
+                Employer-site activity
+              </p>
+
+              <p className="text-2xl font-black text-slate-900">
+                {items ? employerTracked : '—'}
+              </p>
             </div>
           </div>
         </div>
+
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-700"><ShieldCheck size={19} /></div>
+            <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-700">
+              <ShieldCheck size={19} />
+            </div>
+
             <div>
               <p className="text-sm text-slate-500">Through TechAbhi</p>
-              <p className="text-2xl font-black text-slate-900">{items ? submittedCount : '—'}</p>
+
+              <p className="text-2xl font-black text-slate-900">
+                {items ? platformApplications : '—'}
+              </p>
             </div>
           </div>
         </div>
@@ -441,22 +688,35 @@ export function ApplicationsPage() {
 
       <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
         <Info className="mt-0.5 shrink-0" size={19} />
+
         <p>
-          <strong>About application tracking:</strong> Employer-site activity means you opened an external application link. Any later status you select is self-reported, not verified by the employer. For applications submitted through TechAbhi, the employer sets the status shown here.
+          <strong>About application tracking:</strong> Employer-site
+          activity means you opened an external application link. Any
+          status you select for those records is self-reported, not
+          verified by the employer. For applications submitted through
+          TechAbhi, the employer sets the status shown here.
         </p>
       </div>
 
       {err && <ErrorState message={err} onRetry={load} />}
 
-      {actionError && (
-        <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-          {actionError}
+      <InlineError
+        message={actionError}
+        onClose={() => setActionError('')}
+      />
+
+      {actionMessage && (
+        <div
+          role="status"
+          className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+        >
+          {actionMessage}
         </div>
       )}
 
-      {!items && !err && <LoadingState />}
+      {loading && items === null && <LoadingState />}
 
-      {items?.length === 0 && !err && (
+      {!loading && !err && items?.length === 0 && (
         <EmptyState
           icon={FileText}
           title="Your application journey starts here"
@@ -468,147 +728,184 @@ export function ApplicationsPage() {
       {items?.length > 0 && (
         <section className="space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Application activity</h2>
-            <p className="mt-1 text-sm text-slate-500">Your tracked opportunities and latest status information.</p>
+            <h2 className="text-lg font-bold text-slate-900">
+              Application activity
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Your tracked opportunities and latest status information.
+            </p>
           </div>
 
           <div className="space-y-4">
-            {items.map((job) => (
-              <article
-                key={job.id}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-indigo-200 hover:shadow-md"
-              >
-                <div className="p-4 sm:p-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                    <div className="min-w-0 flex-1">
-                      <JobIdentity job={job} />
-                      <p className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-                        <CalendarDays size={14} />
-                        Updated {fmtDate(job.updated_at)}
-                      </p>
+            {items.map((job) => {
+              const isBusy = busyId === job.id;
+              const isPlatformApplication = Boolean(job.sub_status);
+
+              return (
+                <article
+                  key={job.id}
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                >
+                  <div className="p-4 sm:p-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                      <div className="min-w-0 flex-1">
+                        <JobIdentity job={job} />
+                        <UpdatedDate date={job.updated_at} />
+                      </div>
+
+                      {isPlatformApplication ? (
+                        <StatusPill
+                          status={job.sub_status}
+                          label={
+                            SUB[job.sub_status] || job.sub_status
+                          }
+                        />
+                      ) : (
+                        <StatusPill
+                          status={job.app_status}
+                          label={
+                            STATUS[job.app_status] ||
+                            job.app_status ||
+                            'Tracking'
+                          }
+                        />
+                      )}
                     </div>
 
-                    {job.sub_status ? (
-                      <StatusPill
-                        status={job.sub_status}
-                        label={SUB[job.sub_status] || job.sub_status}
-                      />
-                    ) : (
-                      <StatusPill
-                        status={job.app_status}
-                        label={STATUS[job.app_status] || job.app_status || 'Tracking'}
-                      />
+                    {!isPlatformApplication && (
+                      <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-end">
+                        <label className="block w-full sm:max-w-xs">
+                          <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">
+                            Update your status
+                          </span>
+
+                          <select
+                            className={cx(inputCls, 'w-full')}
+                            value={job.app_status || 'link_opened'}
+                            disabled={busyId !== null}
+                            onChange={(event) =>
+                              setStatus(job.id, event.target.value)
+                            }
+                          >
+                            {Object.entries(STATUS).map(
+                              ([key, label]) => (
+                                <option key={key} value={key}>
+                                  {label}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </label>
+
+                        <div className="flex flex-wrap gap-2 sm:ml-auto">
+                          <ActionButton
+                            disabled={busyId !== null}
+                            onClick={() => remove(job.id)}
+                            danger
+                          >
+                            {isBusy ? (
+                              <LoaderCircle
+                                className="animate-spin"
+                                size={16}
+                              />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                            Remove record
+                          </ActionButton>
+                        </div>
+                      </div>
+                    )}
+
+                    {isPlatformApplication && (
+                      <div className="mt-5 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-violet-50/70 p-4 sm:p-5">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-xl bg-white p-2.5 text-indigo-700 shadow-sm">
+                            {job.sub_status === 'hired' ? (
+                              <CheckCircle2 size={20} />
+                            ) : job.sub_status === 'rejected' ? (
+                              <XCircle size={20} />
+                            ) : (
+                              <UserRoundCheck size={20} />
+                            )}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-slate-900">
+                              Application submitted through TechAbhi
+                            </p>
+
+                            <p className="mt-1 text-sm leading-6 text-slate-600">
+                              Submitted on {fmtDate(job.submitted_at)}.
+                              {' '}Employer status:{' '}
+                              <strong>
+                                {SUB[job.sub_status] || job.sub_status}
+                              </strong>.
+                            </p>
+
+                            {job.viewed_at &&
+                              job.sub_status !== 'withdrawn' && (
+                                <p className="mt-2 flex items-center gap-2 text-sm text-indigo-800">
+                                  <CheckCircle2 size={15} />
+                                  Employer opened your application on{' '}
+                                  {fmtDate(job.viewed_at)}
+                                </p>
+                              )}
+
+                            {job.sub_status !== 'withdrawn' && (
+                              <button
+                                type="button"
+                                disabled={busyId !== null}
+                                onClick={() => withdraw(job.id)}
+                                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm font-bold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {isBusy ? (
+                                  <LoaderCircle
+                                    className="animate-spin"
+                                    size={16}
+                                  />
+                                ) : (
+                                  <XCircle size={16} />
+                                )}
+                                Withdraw application
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
 
-                  {!job.sub_status && (
-                    <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-end">
-                      <label className="block w-full sm:max-w-xs">
-                        <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">
-                          Update your status
-                        </span>
-                        <select
-                          className={`${inputCls} w-full`}
-                          value={job.app_status}
-                          disabled={busyId === job.id}
-                          onChange={(event) => setStatus(job.id, event.target.value)}
-                        >
-                          {Object.entries(STATUS).map(([key, label]) => (
-                            <option key={key} value={key}>{label}</option>
-                          ))}
-                        </select>
-                      </label>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:px-6">
+                    <span className="flex items-center gap-2 text-xs text-slate-500">
+                      <Clock3 size={14} />
+                      Last updated {fmtDate(job.updated_at)}
+                    </span>
 
-                      <div className="flex flex-wrap gap-2 sm:ml-auto">
-                        <ActionButton
-                          disabled={busyId === job.id}
-                          onClick={() => remove(job.id)}
-                          danger
-                        >
-                          {busyId === job.id ? (
-                            <LoaderCircle className="animate-spin" size={16} />
-                          ) : (
-                            <Trash2 size={16} />
-                          )}
-                          Remove record
-                        </ActionButton>
-                      </div>
-                    </div>
-                  )}
-
-                  {job.sub_status && (
-                    <div className="mt-5 rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 to-violet-50/70 p-4 sm:p-5">
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-xl bg-white p-2.5 text-indigo-700 shadow-sm">
-                          {job.sub_status === 'hired' ? (
-                            <CheckCircle2 size={20} />
-                          ) : job.sub_status === 'rejected' ? (
-                            <XCircle size={20} />
-                          ) : (
-                            <UserRoundCheck size={20} />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-slate-900">
-                            Application submitted through TechAbhi
-                          </p>
-                          <p className="mt-1 text-sm leading-6 text-slate-600">
-                            Submitted on {fmtDate(job.submitted_at)}. Employer status:{' '}
-                            <strong>{SUB[job.sub_status] || job.sub_status}</strong>.
-                          </p>
-
-                          {job.viewed_at && job.sub_status !== 'withdrawn' && (
-                            <p className="mt-2 flex items-center gap-2 text-sm text-indigo-800">
-                              <CheckCircle2 size={15} />
-                              Employer opened your application on {fmtDate(job.viewed_at)}
-                            </p>
-                          )}
-
-                          {job.sub_status !== 'withdrawn' && (
-                            <button
-                              type="button"
-                              disabled={busyId === job.id}
-                              onClick={() => withdraw(job.id)}
-                              className="mt-4 inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
-                            >
-                              {busyId === job.id ? (
-                                <LoaderCircle className="animate-spin" size={16} />
-                              ) : (
-                                <XCircle size={16} />
-                              )}
-                              Withdraw application
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:px-6">
-                  <span className="flex items-center gap-2 text-xs text-slate-500">
-                    <Clock3 size={14} />
-                    Last updated {fmtDate(job.updated_at)}
-                  </span>
-                  {job.available && (
-                    <Link
-                      to={`/jobs/${job.id}`}
-                      className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-700 hover:text-indigo-900"
-                    >
-                      View job <ChevronRight size={16} />
-                    </Link>
-                  )}
-                </div>
-              </article>
-            ))}
+                    {job.available && (
+                      <Link
+                        to={`/jobs/${job.id}`}
+                        className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-700 hover:text-indigo-900"
+                      >
+                        View job <ChevronRight size={16} />
+                      </Link>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </section>
       )}
 
       <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-emerald-900">
         <TrendingUp className="mt-0.5 shrink-0" size={19} />
+
         <p>
-          <strong>Small tip:</strong> Keep your resume up to date and check each opportunity's requirements before applying. Consistent, relevant applications help you manage your search.
+          <strong>Small tip:</strong> Keep your resume up to date and
+          check each opportunity's requirements before applying.
+          Consistent, relevant applications help you manage your search.
         </p>
       </div>
     </PageShell>

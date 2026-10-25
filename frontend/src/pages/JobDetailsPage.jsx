@@ -7,16 +7,13 @@ import {
   BriefcaseBusiness,
   Building2,
   CalendarDays,
-  CheckCircle2,
   ChevronRight,
   Clock3,
   FileSearch,
-  GraduationCap,
   MapPin,
   RefreshCw,
   ShieldCheck,
   Sparkles,
-  Wifi,
 } from 'lucide-react';
 
 import { api, track } from '../lib/api';
@@ -26,7 +23,7 @@ import JobCard from '../components/JobCard';
 
 function PageContainer({ children }) {
   return (
-    <main className="min-h-screen bg-[#f8f9fd] text-slate-900">
+    <main className="min-h-screen bg-[#f7f8fc] text-slate-900">
       {children}
     </main>
   );
@@ -38,7 +35,7 @@ function BackToJobs() {
       to="/jobs"
       className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-indigo-700"
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white transition group-hover:border-indigo-200 group-hover:bg-indigo-50">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm transition group-hover:border-indigo-200 group-hover:bg-indigo-50">
         <ArrowLeft size={16} />
       </span>
       Back to opportunities
@@ -49,15 +46,17 @@ function BackToJobs() {
 function LoadingPage() {
   return (
     <PageContainer>
-      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <div className="h-5 w-44 animate-pulse rounded-lg bg-slate-200" />
 
-        <div className="mt-7 overflow-hidden rounded-3xl border border-slate-200 bg-white">
-          <div className="h-2 animate-pulse bg-indigo-100" />
+        <div className="mt-7 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="h-1.5 animate-pulse bg-gradient-to-r from-indigo-200 to-violet-200" />
+
           <div className="p-6 sm:p-10">
             <div className="h-5 w-32 animate-pulse rounded bg-slate-100" />
             <div className="mt-5 h-10 max-w-xl animate-pulse rounded-xl bg-slate-200" />
             <div className="mt-4 h-5 max-w-sm animate-pulse rounded bg-slate-100" />
+
             <div className="mt-8 flex flex-wrap gap-3">
               {[1, 2, 3, 4].map((item) => (
                 <div
@@ -69,19 +68,25 @@ function LoadingPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
-          <div className="h-80 animate-pulse rounded-3xl border border-slate-200 bg-white" />
-          <div className="h-64 animate-pulse rounded-3xl border border-slate-200 bg-white" />
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="h-[440px] animate-pulse rounded-3xl border border-slate-200 bg-white" />
+          <div className="h-72 animate-pulse rounded-3xl border border-slate-200 bg-white" />
         </div>
       </div>
     </PageContainer>
   );
 }
 
-function StatusPage({ title, description, icon: Icon, action, onRetry }) {
+function StatusPage({
+  title,
+  description,
+  icon: Icon,
+  action,
+  onRetry,
+}) {
   return (
     <PageContainer>
-      <div className="mx-auto flex min-h-[65vh] max-w-7xl items-center justify-center px-5 py-16 sm:px-8">
+      <div className="flex min-h-[65vh] items-center justify-center px-4 py-16 sm:px-6">
         <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-7 text-center shadow-sm sm:p-10">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
             <Icon size={29} strokeWidth={1.7} />
@@ -104,7 +109,7 @@ function StatusPage({ title, description, icon: Icon, action, onRetry }) {
               <button
                 type="button"
                 onClick={onRetry}
-                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
               >
                 <RefreshCw size={16} />
                 Try again
@@ -125,48 +130,7 @@ function StatusPage({ title, description, icon: Icon, action, onRetry }) {
   );
 }
 
-function getJobFacts(job) {
-  const facts = [
-    {
-      icon: MapPin,
-      label: 'Location',
-      value: job.location,
-    },
-    {
-      icon: BriefcaseBusiness,
-      label: 'Employment',
-      value: job.employment_type,
-    },
-    {
-      icon: Wifi,
-      label: 'Work mode',
-      value: job.work_mode,
-    },
-    {
-      icon: GraduationCap,
-      label: 'Experience',
-      value: job.experience,
-    },
-  ];
-
-  return facts.filter(
-    (fact) =>
-      fact.value &&
-      String(fact.value).trim() &&
-      String(fact.value).toLowerCase() !== 'null'
-  );
-}
-
-function formatLabel(value) {
-  if (!value) return '';
-  return String(value)
-    .replaceAll('_', ' ')
-    .replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
 function JobHero({ job }) {
-  const facts = getJobFacts(job);
-
   return (
     <section className="relative isolate overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/70 to-violet-50/80 shadow-sm">
       <div className="pointer-events-none absolute -right-20 -top-24 -z-10 h-72 w-72 rounded-full bg-indigo-200/30 blur-3xl" />
@@ -180,14 +144,14 @@ function JobHero({ job }) {
           </span>
 
           {job.work_mode && (
-            <span className="rounded-full border border-white bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-600">
-              {formatLabel(job.work_mode)}
+            <span className="rounded-full border border-white bg-white/80 px-3 py-1.5 text-xs font-semibold capitalize text-slate-600">
+              {String(job.work_mode).replaceAll('_', ' ')}
             </span>
           )}
 
           {job.employment_type && (
-            <span className="rounded-full border border-white bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-600">
-              {formatLabel(job.employment_type)}
+            <span className="rounded-full border border-white bg-white/80 px-3 py-1.5 text-xs font-semibold capitalize text-slate-600">
+              {String(job.employment_type).replaceAll('_', ' ')}
             </span>
           )}
         </div>
@@ -199,60 +163,93 @@ function JobHero({ job }) {
 
           <div className="min-w-0 flex-1">
             <h1 className="break-words text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-4xl lg:text-[2.75rem]">
-              {job.title}
+              {job.title || 'Job opportunity'}
             </h1>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-slate-600 sm:text-base">
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600 sm:text-base">
               {job.company && (
                 <span className="inline-flex items-center gap-1.5 font-semibold text-slate-800">
-                  <Building2 size={16} className="text-indigo-600" />
-                  {job.company}
+                  <BriefcaseBusiness size={16} className="text-indigo-600" />
+                  <span className="break-words">{job.company}</span>
                 </span>
               )}
 
               {job.location && (
                 <span className="inline-flex items-center gap-1.5">
-                  <MapPin size={16} className="text-slate-400" />
+                  <MapPin size={16} className="shrink-0 text-slate-400" />
                   {job.location}
                 </span>
               )}
             </div>
 
-            {job.salary && (
-              <div className="mt-5 inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-800">
-                <CheckCircle2 size={17} />
-                {job.salary}
-              </div>
-            )}
+            <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-800">
+              <span className="shrink-0">
+                <BriefcaseBusiness size={17} />
+              </span>
+              <span className="break-words">
+                {job.salary || 'Salary not disclosed'}
+              </span>
+            </div>
           </div>
         </div>
 
-        {facts.length > 0 && (
-          <div className="mt-8 grid gap-3 border-t border-indigo-100/80 pt-6 sm:grid-cols-2 lg:grid-cols-4">
-            {facts.map(({ icon: Icon, label, value }) => (
-              <div
-                key={label}
-                className="flex min-w-0 items-start gap-3 rounded-2xl border border-white/90 bg-white/75 p-3.5"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                  <Icon size={18} />
-                </span>
+        <div className="mt-8 grid gap-3 border-t border-indigo-100/80 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+          {job.experience && (
+            <HeroFact
+              label="Experience"
+              value={job.experience}
+              icon={ShieldCheck}
+            />
+          )}
 
-                <span className="min-w-0">
-                  <span className="block text-xs font-medium text-slate-500">
-                    {label}
-                  </span>
-                  <span className="mt-1 block break-words text-sm font-bold text-slate-800">
-                    {formatLabel(value)}
-                  </span>
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+          {job.education && (
+            <HeroFact
+              label="Education"
+              value={job.education}
+              icon={Building2}
+            />
+          )}
+
+          {job.published_at && (
+            <HeroFact
+              label="Posted on"
+              value={formatDate(job.published_at)}
+              icon={CalendarDays}
+            />
+          )}
+        </div>
       </div>
     </section>
   );
+}
+
+function HeroFact({ label, value, icon: Icon }) {
+  return (
+    <div className="flex min-w-0 items-start gap-3 rounded-2xl border border-white/90 bg-white/75 p-3.5">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+        <Icon size={18} />
+      </span>
+
+      <div className="min-w-0">
+        <p className="text-xs font-medium text-slate-500">{label}</p>
+        <p className="mt-1 break-words text-sm font-bold text-slate-800">
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function formatDate(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 function ApplicationNote() {
@@ -262,10 +259,12 @@ function ApplicationNote() {
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
           <ShieldCheck size={21} />
         </span>
+
         <div>
           <h2 className="text-sm font-bold text-slate-900">
             Apply with confidence
           </h2>
+
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Review the role details, eligibility and application instructions
             before submitting your application.
@@ -280,7 +279,7 @@ export function NotFound({
   title = 'Page not found',
   text = "We couldn't find what you were looking for.",
 }) {
-  useMeta(title + ' | TechAbhi');
+  useMeta(`${title} | TechAbhi`);
 
   return (
     <StatusPage
@@ -294,6 +293,7 @@ export function NotFound({
 
 export default function JobDetailsPage() {
   const { id } = useParams();
+
   const [state, setState] = useState({ loading: true });
   const [retryKey, setRetryKey] = useState(0);
 
@@ -302,26 +302,27 @@ export default function JobDetailsPage() {
 
     setState({ loading: true });
 
-    api('/jobs/' + id)
+    api(`/jobs/${id}`)
       .then((data) => {
         if (!active) return;
 
-        const job = data.job;
+        const job = data?.job;
+
         setState({
           job,
-          related: Array.isArray(data.related) ? data.related : [],
+          related: Array.isArray(data?.related) ? data.related : [],
         });
 
         if (job) {
           try {
-            const key = 'viewed_' + id;
+            const key = `viewed_${id}`;
 
             if (!sessionStorage.getItem(key)) {
               sessionStorage.setItem(key, '1');
               track(id, 'view');
             }
           } catch {
-            // Viewing the job should still work if session storage is unavailable.
+            // Job details remain available if session storage is unavailable.
           }
         }
       })
@@ -338,7 +339,7 @@ export default function JobDetailsPage() {
 
   useMeta(
     job
-      ? `${job.title}${job.company ? ' at ' + job.company : ''} | TechAbhi`
+      ? `${job.title}${job.company ? ` at ${job.company}` : ''} | TechAbhi`
       : 'Job Details | TechAbhi',
     job?.description?.slice(0, 155)
   );
@@ -390,90 +391,39 @@ export default function JobDetailsPage() {
 
   return (
     <PageContainer>
-      <div className="mx-auto max-w-7xl px-5 py-7 sm:px-8 sm:py-10">
+      <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
         <div className="mb-6">
           <BackToJobs />
         </div>
 
         <JobHero job={job} />
 
-        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_290px]">
-          <section className="min-w-0 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8 lg:p-9">
-            <div className="mb-6 flex items-center gap-3 border-b border-slate-100 pb-5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                <BriefcaseBusiness size={22} />
-              </div>
-              <div>
-                <h2 className="text-lg font-extrabold text-slate-950">
-                  Job overview
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Role details and application information
-                </p>
-              </div>
-            </div>
+        {/* JobView owns the full description and application sidebar. */}
+        <section className="mt-8">
+          <JobView job={job} />
+        </section>
 
-            {/* Keep the existing component responsible for job content and apply behaviour. */}
-            <JobView job={job} />
-          </section>
+        <div className="mt-6">
+          <ApplicationNote />
+        </div>
 
-          <aside className="space-y-4 lg:sticky lg:top-6">
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-600">
-                YOUR NEXT STEP
-              </p>
+        {job.expires_at && (
+          <div className="mt-5 flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+              <CalendarDays size={18} />
+            </span>
 
-              <h2 className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
-                Interested in this role?
+            <div>
+              <h2 className="text-sm font-bold text-slate-800">
+                Application deadline
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-slate-500">
-                Read the full description and follow the application process
-                provided for this opening.
+              <p className="mt-1 text-sm text-slate-500">
+                {formatDate(job.expires_at)}
               </p>
-
-              <div className="mt-5 flex items-start gap-3 rounded-2xl bg-slate-50 p-3.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm">
-                  <ShieldCheck size={19} />
-                </span>
-                <div>
-                  <p className="text-sm font-bold text-slate-800">
-                    Check before applying
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    Confirm eligibility, required skills and application details.
-                  </p>
-                </div>
-              </div>
-
-              <Link
-                to="/jobs"
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
-              >
-                Explore more jobs
-                <ArrowUpRight size={16} />
-              </Link>
             </div>
-
-            <ApplicationNote />
-
-            {job.expires_at && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <CalendarDays size={17} className="text-indigo-600" />
-                  Application deadline
-                </div>
-                <p className="mt-2 text-sm text-slate-500">
-                  {new Date(job.expires_at).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
-            )}
-          </aside>
-        </div>
+          </div>
+        )}
 
         {related.length > 0 && (
           <section className="mt-16 border-t border-slate-200 pt-10 sm:mt-20 sm:pt-12">
@@ -482,9 +432,11 @@ export default function JobDetailsPage() {
                 <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">
                   KEEP EXPLORING
                 </p>
+
                 <h2 className="text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
                   More opportunities for you
                 </h2>
+
                 <p className="mt-2 text-sm text-slate-500 sm:text-base">
                   Take a look at other available roles.
                 </p>
@@ -499,13 +451,32 @@ export default function JobDetailsPage() {
               </Link>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((relatedJob) => (
                 <JobCard key={relatedJob.id} job={relatedJob} />
               ))}
             </div>
           </section>
         )}
+
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50 p-5 sm:p-6">
+          <div>
+            <h2 className="font-extrabold text-slate-900">
+              Still exploring your next move?
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Discover more roles that match your career goals.
+            </p>
+          </div>
+
+          <Link
+            to="/jobs"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700"
+          >
+            Browse all jobs
+            <ArrowUpRight size={16} />
+          </Link>
+        </div>
       </div>
     </PageContainer>
   );

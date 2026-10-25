@@ -53,20 +53,29 @@ const FIELD_TEXT = {
   resume: 'your resume',
 };
 
-const dt = (date) =>
-  new Date(date).toLocaleString('en-IN', {
+const cx = (...classes) => classes.filter(Boolean).join(' ');
+
+const dt = (date) => {
+  if (!date) return 'Date not available';
+
+  const value = new Date(date);
+
+  if (Number.isNaN(value.getTime())) return 'Date not available';
+
+  return value.toLocaleString('en-IN', {
     dateStyle: 'medium',
     timeStyle: 'short',
   });
-
-const cx = (...classes) => classes.filter(Boolean).join(' ');
+};
 
 function Panel({ children, className = '' }) {
   return (
-    <section className={cx(
-      'rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7',
-      className
-    )}>
+    <section
+      className={cx(
+        'rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7',
+        className
+      )}
+    >
       {children}
     </section>
   );
@@ -78,17 +87,20 @@ function SectionHeading({ icon: Icon, title, description, badge }) {
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100">
         <Icon size={21} />
       </div>
+
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-base font-bold tracking-tight text-slate-900 sm:text-lg">
             {title}
           </h2>
+
           {badge && (
             <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-700">
               {badge}
             </span>
           )}
         </div>
+
         {description && (
           <p className="mt-1 text-sm leading-6 text-slate-500">
             {description}
@@ -112,10 +124,14 @@ function Message({ type = 'error', children, onClose }) {
           : 'border-rose-200 bg-rose-50 text-rose-800'
       )}
     >
-      {success
-        ? <CheckCircle2 size={19} className="mt-0.5 shrink-0" />
-        : <AlertCircle size={19} className="mt-0.5 shrink-0" />}
+      {success ? (
+        <CheckCircle2 size={19} className="mt-0.5 shrink-0" />
+      ) : (
+        <AlertCircle size={19} className="mt-0.5 shrink-0" />
+      )}
+
       <div className="min-w-0 flex-1 leading-6">{children}</div>
+
       {onClose && (
         <button
           type="button"
@@ -146,11 +162,13 @@ function StatusBadge({ status }) {
   };
 
   return (
-    <span className={cx(
-      'inline-flex items-center rounded-full px-3 py-1.5 text-xs font-bold capitalize ring-1 ring-inset',
-      styles[status] || 'bg-slate-100 text-slate-600 ring-slate-200'
-    )}>
-      {(OUT_TEXT[status] || status || 'Unknown').replaceAll('_', ' ')}
+    <span
+      className={cx(
+        'inline-flex items-center rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset',
+        styles[status] || 'bg-slate-100 text-slate-600 ring-slate-200'
+      )}
+    >
+      {OUT_TEXT[status] || String(status || 'Unknown').replaceAll('_', ' ')}
     </span>
   );
 }
@@ -159,8 +177,12 @@ function LoadingPage() {
   return (
     <div className="space-y-5">
       <div className="h-48 animate-pulse rounded-3xl bg-slate-200" />
+
       {[1, 2].map((item) => (
-        <div key={item} className="rounded-2xl border border-slate-200 bg-white p-6">
+        <div
+          key={item}
+          className="rounded-2xl border border-slate-200 bg-white p-6"
+        >
           <div className="h-5 w-48 animate-pulse rounded bg-slate-100" />
           <div className="mt-4 h-20 animate-pulse rounded-xl bg-slate-100" />
         </div>
@@ -169,13 +191,19 @@ function LoadingPage() {
   );
 }
 
-function EmptyState({ title, description, icon: Icon = HeartHandshake }) {
+function EmptyState({
+  title,
+  description,
+  icon: Icon = HeartHandshake,
+}) {
   return (
     <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-10 text-center">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
         <Icon size={26} />
       </div>
+
       <h3 className="mt-4 font-bold text-slate-900">{title}</h3>
+
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
         {description}
       </p>
@@ -184,12 +212,12 @@ function EmptyState({ title, description, icon: Icon = HeartHandshake }) {
 }
 
 export default function CareerAssistancePage() {
-  const [d, setD] = useState(null);
+  const [data, setData] = useState(null);
   const [err, setErr] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const [f, setF] = useState({
+  const [form, setForm] = useState({
     target_roles: '',
     preferred_locations: '',
     availability: '',
@@ -202,11 +230,13 @@ export default function CareerAssistancePage() {
     let active = true;
 
     api('/candidate/assistance', { candidate: true })
-      .then((data) => {
-        if (active) setD(data);
+      .then((response) => {
+        if (active) setData(response);
       })
       .catch((error) => {
-        if (active) setErr(error.message || 'Unable to load career assistance.');
+        if (active) {
+          setErr(error.message || 'Unable to load career assistance.');
+        }
       });
 
     return () => {
@@ -214,7 +244,7 @@ export default function CareerAssistancePage() {
     };
   }, []);
 
-  const run = async (fn, successMessage = '') => {
+  const run = async (operation, successMessage = '') => {
     if (busy) return;
 
     setBusy(true);
@@ -222,8 +252,9 @@ export default function CareerAssistancePage() {
     setMsg('');
 
     try {
-      const data = await fn();
-      setD(data);
+      const response = await operation();
+      setData(response);
+
       if (successMessage) setMsg(successMessage);
     } catch (error) {
       setErr(error.message || 'Something went wrong. Please try again.');
@@ -232,17 +263,17 @@ export default function CareerAssistancePage() {
     }
   };
 
-  const set = (key) => (event) => {
-    setF((previous) => ({
+  const updateField = (field) => (event) => {
+    setForm((previous) => ({
       ...previous,
-      [key]: event.target.value,
+      [field]: event.target.value,
     }));
   };
 
   const submit = (event) => {
     event.preventDefault();
 
-    if (!f.target_roles.trim()) {
+    if (!form.target_roles.trim()) {
       setErr('Please tell us which roles you are looking for.');
       return;
     }
@@ -253,15 +284,19 @@ export default function CareerAssistancePage() {
     }
 
     run(
-      () => api('/candidate/assistance', {
-        method: 'POST',
-        candidate: true,
-        body: {
-          ...f,
-          target_roles: f.target_roles.trim(),
-          consent_review: consent,
-        },
-      }),
+      () =>
+        api('/candidate/assistance', {
+          method: 'POST',
+          candidate: true,
+          body: {
+            ...form,
+            target_roles: form.target_roles.trim(),
+            preferred_locations: form.preferred_locations.trim(),
+            availability: form.availability.trim(),
+            challenges: form.challenges.trim(),
+            consent_review: consent,
+          },
+        }),
       'Your career assistance request has been submitted.'
     );
   };
@@ -274,11 +309,12 @@ export default function CareerAssistancePage() {
     };
 
     run(
-      () => api(`/candidate/assistance/outreach/${id}/decision`, {
-        method: 'POST',
-        candidate: true,
-        body: { decision },
-      }),
+      () =>
+        api(`/candidate/assistance/outreach/${id}/decision`, {
+          method: 'POST',
+          candidate: true,
+          body: { decision },
+        }),
       messages[decision] || 'Your decision has been recorded.'
     );
   };
@@ -290,26 +326,27 @@ export default function CareerAssistancePage() {
 
     if (!confirmed) return;
 
-    run(
-      async () => {
-        await api('/candidate/assistance/withdraw', {
-          method: 'POST',
-          candidate: true,
-        });
-        return api('/candidate/assistance', { candidate: true });
-      },
-      'Your withdrawal request has been processed.'
-    );
+    run(async () => {
+      await api('/candidate/assistance/withdraw', {
+        method: 'POST',
+        candidate: true,
+      });
+
+      return api('/candidate/assistance', { candidate: true });
+    }, 'Your withdrawal request has been processed.');
   };
 
-  if (!d) {
+  if (!data) {
     return err ? (
       <div className="rounded-2xl border border-rose-200 bg-white p-7 text-center">
         <AlertCircle size={28} className="mx-auto text-rose-500" />
+
         <h2 className="mt-3 text-lg font-bold text-slate-900">
           Unable to load your request
         </h2>
+
         <p className="mt-2 text-sm text-rose-700">{err}</p>
+
         <button
           type="button"
           onClick={() => window.location.reload()}
@@ -318,10 +355,18 @@ export default function CareerAssistancePage() {
           Try again
         </button>
       </div>
-    ) : <LoadingPage />;
+    ) : (
+      <LoadingPage />
+    );
   }
 
-  const rq = d.request;
+  const request = data.request;
+  const outreach = Array.isArray(request?.outreach)
+    ? request.outreach
+    : [];
+  const updates = Array.isArray(request?.updates)
+    ? request.updates
+    : [];
 
   return (
     <div className="space-y-6 pb-6">
@@ -330,6 +375,7 @@ export default function CareerAssistancePage() {
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-indigo-500/25 blur-3xl" />
           <div className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl" />
+
           <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,.4)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.4)_1px,transparent_1px)] [background-size:34px_34px]" />
         </div>
 
@@ -374,7 +420,7 @@ export default function CareerAssistancePage() {
         </Message>
       )}
 
-      {/* Important expectations */}
+      {/* How it works */}
       <Panel>
         <SectionHeading
           icon={ShieldCheck}
@@ -400,20 +446,31 @@ export default function CareerAssistancePage() {
               text: 'Approve or decline each proposal individually.',
             },
           ].map(({ icon: Icon, title, text }) => (
-            <div key={title} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+            <div
+              key={title}
+              className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm">
                 <Icon size={19} />
               </div>
-              <h3 className="mt-4 text-sm font-bold text-slate-900">{title}</h3>
-              <p className="mt-2 text-xs leading-6 text-slate-500">{text}</p>
+
+              <h3 className="mt-4 text-sm font-bold text-slate-900">
+                {title}
+              </h3>
+
+              <p className="mt-2 text-xs leading-6 text-slate-500">
+                {text}
+              </p>
             </div>
           ))}
         </div>
 
         <div className="mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           <Info size={19} className="mt-0.5 shrink-0" />
+
           <div className="leading-6">
             <p className="font-bold">Please keep expectations realistic</p>
+
             <ul className="mt-1 list-disc space-y-1 pl-4">
               <li>There is no guarantee of a job, interview or company response.</li>
               <li>Never pay anyone to get a job. Be careful with suspicious offers.</li>
@@ -424,7 +481,7 @@ export default function CareerAssistancePage() {
       </Panel>
 
       {/* Request form */}
-      {d.can_request && (
+      {data.can_request && (
         <Panel>
           <SectionHeading
             icon={BriefcaseBusiness}
@@ -433,12 +490,15 @@ export default function CareerAssistancePage() {
             badge="Optional"
           />
 
-          {rq?.status === 'closed' && (
+          {request?.status === 'closed' && (
             <div className="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-              <p className="font-bold text-slate-800">Your previous request is closed.</p>
+              <p className="font-bold text-slate-800">
+                Your previous request is closed.
+              </p>
+
               <p className="mt-1">
-                {rq.closed_reason
-                  ? `Reason: ${rq.closed_reason}`
+                {request.closed_reason
+                  ? `Reason: ${request.closed_reason}`
                   : 'You can submit a new request if you need further assistance.'}
               </p>
             </div>
@@ -446,76 +506,111 @@ export default function CareerAssistancePage() {
 
           <form onSubmit={submit} className="space-y-5">
             <div>
-              <label htmlFor="target-roles" className="mb-2 block text-sm font-semibold text-slate-700">
-                Which roles are you looking for? <span className="text-rose-500">*</span>
+              <label
+                htmlFor="target-roles"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Which roles are you looking for?{' '}
+                <span className="text-rose-500">*</span>
               </label>
+
               <input
                 id="target-roles"
-                className={cx(inputCls, 'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10')}
+                className={cx(
+                  inputCls,
+                  'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                )}
                 placeholder="e.g. Frontend Developer, Java Developer, Software Engineer"
-                value={f.target_roles}
-                onChange={set('target_roles')}
+                value={form.target_roles}
+                onChange={updateField('target_roles')}
                 maxLength={500}
                 required
+                disabled={busy}
               />
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="preferred-locations" className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <label
+                  htmlFor="preferred-locations"
+                  className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700"
+                >
                   <MapPin size={15} className="text-indigo-500" />
                   Preferred locations
                 </label>
+
                 <input
                   id="preferred-locations"
-                  className={cx(inputCls, 'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10')}
+                  className={cx(
+                    inputCls,
+                    'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                  )}
                   placeholder="e.g. Ahmedabad, Pune, Noida"
-                  value={f.preferred_locations}
-                  onChange={set('preferred_locations')}
+                  value={form.preferred_locations}
+                  onChange={updateField('preferred_locations')}
                   maxLength={500}
+                  disabled={busy}
                 />
               </div>
 
               <div>
-                <label htmlFor="availability" className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <label
+                  htmlFor="availability"
+                  className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700"
+                >
                   <CalendarClock size={15} className="text-indigo-500" />
                   Availability
                 </label>
+
                 <input
                   id="availability"
-                  className={cx(inputCls, 'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10')}
+                  className={cx(
+                    inputCls,
+                    'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                  )}
                   placeholder="e.g. Immediate, 30-day notice"
-                  value={f.availability}
-                  onChange={set('availability')}
+                  value={form.availability}
+                  onChange={updateField('availability')}
                   maxLength={250}
+                  disabled={busy}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="challenges" className="mb-2 block text-sm font-semibold text-slate-700">
+              <label
+                htmlFor="challenges"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
                 What is making your job search difficult?
               </label>
+
               <textarea
                 id="challenges"
-                className="min-h-32 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10"
+                className="min-h-32 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm leading-6 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 disabled:bg-slate-50"
                 rows={4}
                 maxLength={3000}
                 placeholder="For example: finding suitable fresher roles, getting interview calls, choosing a career path…"
-                value={f.challenges}
-                onChange={set('challenges')}
+                value={form.challenges}
+                onChange={updateField('challenges')}
+                disabled={busy}
               />
+
               <p className="mt-1.5 text-right text-xs text-slate-400">
-                {f.challenges.length}/3000
+                {form.challenges.length}/3000
               </p>
             </div>
 
             <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
-              <p className="text-sm font-bold text-slate-800">Before you submit</p>
+              <p className="text-sm font-bold text-slate-800">
+                Before you submit
+              </p>
+
               <p className="mt-1 text-sm leading-6 text-slate-600">
                 The team may need to review your profile and resume. You can
                 update them before submitting.
               </p>
+
               <div className="mt-3 flex flex-wrap gap-3">
                 <Link
                   to="/candidate/profile"
@@ -525,6 +620,7 @@ export default function CareerAssistancePage() {
                   Review profile
                   <ArrowRight size={13} />
                 </Link>
+
                 <Link
                   to="/candidate/resume"
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 hover:text-indigo-900"
@@ -543,7 +639,9 @@ export default function CareerAssistancePage() {
                 onChange={(event) => setConsent(event.target.checked)}
                 className="mt-1 h-4 w-4 shrink-0 accent-indigo-600"
                 required
+                disabled={busy}
               />
+
               <span className="text-sm leading-6 text-slate-600">
                 I agree that the TechAbhi team can review my profile, resume
                 and the details above to assess my request and look for
@@ -554,11 +652,11 @@ export default function CareerAssistancePage() {
 
             <button
               type="submit"
-              disabled={!consent || !f.target_roles.trim() || busy}
+              disabled={!consent || !form.target_roles.trim() || busy}
               className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               {busy ? (
-                <span className="animate-pulse">Submitting request…</span>
+                'Submitting request…'
               ) : (
                 <>
                   Submit assistance request
@@ -571,7 +669,7 @@ export default function CareerAssistancePage() {
       )}
 
       {/* Current request */}
-      {rq && rq.status !== 'closed' && (
+      {request && request.status !== 'closed' && (
         <>
           <Panel>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -579,18 +677,24 @@ export default function CareerAssistancePage() {
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                   <Clock3 size={21} />
                 </div>
+
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Your assistance request</h2>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Your assistance request
+                  </h2>
+
                   <p className="mt-1 text-sm leading-6 text-slate-500">
-                    {STATUS_TEXT[rq.status] || 'Your request status has been updated.'}
+                    {STATUS_TEXT[request.status] ||
+                      'Your request status has been updated.'}
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-bold capitalize text-indigo-700">
-                  {rq.status.replaceAll('_', ' ')}
+                  {String(request.status || 'unknown').replaceAll('_', ' ')}
                 </span>
+
                 <button
                   type="button"
                   disabled={busy}
@@ -603,10 +707,11 @@ export default function CareerAssistancePage() {
               </div>
             </div>
 
-            {rq.first_viewed_at && (
+            {request.first_viewed_at && (
               <p className="mt-4 flex items-center gap-2 text-xs text-slate-500">
                 <Clock3 size={14} />
-                The team first opened your request on {fmtDate(rq.first_viewed_at)}.
+                The team first opened your request on{' '}
+                {fmtDate(request.first_viewed_at)}.
               </p>
             )}
 
@@ -615,16 +720,19 @@ export default function CareerAssistancePage() {
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Target roles
                 </p>
-                <p className="mt-2 text-sm font-semibold text-slate-800">
-                  {rq.target_roles}
+
+                <p className="mt-2 break-words text-sm font-semibold text-slate-800">
+                  {request.target_roles}
                 </p>
               </div>
+
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Preferred locations
                 </p>
+
                 <p className="mt-2 text-sm font-semibold text-slate-800">
-                  {rq.preferred_locations || 'No preference provided'}
+                  {request.preferred_locations || 'No preference provided'}
                 </p>
               </div>
             </div>
@@ -636,10 +744,10 @@ export default function CareerAssistancePage() {
               icon={Building2}
               title="Company contact proposals"
               description="Review each proposal before deciding whether to approve sharing."
-              badge={`${rq.outreach.length} proposal${rq.outreach.length === 1 ? '' : 's'}`}
+              badge={`${outreach.length} proposal${outreach.length === 1 ? '' : 's'}`}
             />
 
-            {rq.outreach.length === 0 && (
+            {outreach.length === 0 && (
               <EmptyState
                 title="No proposals yet"
                 description="If the team identifies a potential opportunity, the proposal will appear here. You remain in control of each decision."
@@ -647,147 +755,173 @@ export default function CareerAssistancePage() {
               />
             )}
 
-            {rq.outreach.map((outreach) => (
-              <Panel key={outreach.id} className="overflow-hidden">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                    <Building2 size={23} />
-                  </div>
+            {outreach.map((item) => {
+              const fields = Array.isArray(item.shared_fields)
+                ? item.shared_fields
+                : [];
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <h3 className="break-words text-base font-bold text-slate-900">
-                          {outreach.company_name}
-                        </h3>
-                        {outreach.job_title && (
-                          <p className="mt-1 text-sm text-slate-500">
-                            {outreach.job_title}
+              return (
+                <Panel key={item.id} className="overflow-hidden">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                      <Building2 size={23} />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="break-words text-base font-bold text-slate-900">
+                            {item.company_name || 'Company not specified'}
+                          </h3>
+
+                          {item.job_title && (
+                            <p className="mt-1 text-sm text-slate-500">
+                              {item.job_title}
+                            </p>
+                          )}
+                        </div>
+
+                        <StatusBadge status={item.status} />
+                      </div>
+
+                      <div className="mt-4 rounded-xl bg-slate-50 p-4">
+                        <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+                          <MessageSquareText size={14} />
+                          Message from the team
+                        </p>
+
+                        <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                          {item.message || 'No additional message provided.'}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/70 p-4">
+                        <p className="flex items-center gap-2 text-sm font-bold text-amber-900">
+                          <LockKeyhole size={16} />
+                          Information proposed for sharing
+                        </p>
+
+                        <p className="mt-2 text-sm leading-6 text-amber-900/80">
+                          Your name
+                          {fields.length
+                            ? ', ' +
+                              fields
+                                .map((field) => FIELD_TEXT[field] || field)
+                                .join(', ')
+                            : ' only'}
+                          .
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-amber-800/80">
+                          Check the proposed information carefully before approving.
+                        </p>
+                      </div>
+
+                      {item.shared_at && (
+                        <p className="mt-3 text-xs text-slate-500">
+                          Sharing recorded by the team on{' '}
+                          {fmtDate(item.shared_at)}.
+                        </p>
+                      )}
+
+                      {item.interview_at && (
+                        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                          <p className="flex items-center gap-2 font-bold text-emerald-800">
+                            <CheckCircle2 size={17} />
+                            Interview recorded by the team
                           </p>
-                        )}
-                      </div>
-                      <StatusBadge status={outreach.status} />
-                    </div>
 
-                    <div className="mt-4 rounded-xl bg-slate-50 p-4">
-                      <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-                        <MessageSquareText size={14} />
-                        Message from the team
-                      </p>
-                      <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
-                        {outreach.message}
-                      </p>
-                    </div>
+                          <p className="mt-2 text-sm leading-6 text-emerald-800">
+                            {dt(item.interview_at)}
+                            {item.interview_info
+                              ? ` · ${item.interview_info}`
+                              : ''}
+                          </p>
 
-                    <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/70 p-4">
-                      <p className="flex items-center gap-2 text-sm font-bold text-amber-900">
-                        <LockKeyhole size={16} />
-                        Information proposed for sharing
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-amber-900/80">
-                        Your name
-                        {outreach.shared_fields.length
-                          ? ', ' + outreach.shared_fields
-                              .map((field) => FIELD_TEXT[field] || field)
-                              .join(', ')
-                          : ' only'}.
-                      </p>
-                      <p className="mt-2 text-xs leading-5 text-amber-800/80">
-                        Check the proposed information carefully before approving.
-                      </p>
-                    </div>
+                          <p className="mt-2 text-xs leading-5 text-emerald-700">
+                            Please confirm all interview arrangements directly with the company.
+                          </p>
+                        </div>
+                      )}
 
-                    {outreach.shared_at && (
-                      <p className="mt-3 text-xs text-slate-500">
-                        Sharing recorded by the team on {fmtDate(outreach.shared_at)}.
-                      </p>
-                    )}
+                      {item.status === 'proposed' && (
+                        <div className="mt-5">
+                          <p className="text-sm font-bold text-slate-800">
+                            What would you like to do?
+                          </p>
 
-                    {outreach.interview_at && (
-                      <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                        <p className="flex items-center gap-2 font-bold text-emerald-800">
-                          <CheckCircle2 size={17} />
-                          Interview recorded by the team
-                        </p>
-                        <p className="mt-2 text-sm leading-6 text-emerald-800">
-                          {dt(outreach.interview_at)}
-                          {outreach.interview_info ? ` · ${outreach.interview_info}` : ''}
-                        </p>
-                        <p className="mt-2 text-xs leading-5 text-emerald-700">
-                          Please confirm all interview arrangements directly with the company.
-                        </p>
-                      </div>
-                    )}
+                          <p className="mt-1 text-xs leading-5 text-slate-500">
+                            Your decision applies to this proposal only.
+                          </p>
 
-                    {outreach.status === 'proposed' && (
-                      <div className="mt-5">
-                        <p className="text-sm font-bold text-slate-800">
-                          What would you like to do?
-                        </p>
-                        <p className="mt-1 text-xs leading-5 text-slate-500">
-                          Your decision applies to this proposal only.
-                        </p>
-                        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => decide(item.id, 'approve')}
+                              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                            >
+                              <Check size={17} />
+                              Approve sharing
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => decide(item.id, 'decline')}
+                              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+                            >
+                              <X size={17} />
+                              Decline proposal
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {item.status === 'candidate_approved' && (
+                        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                          <p className="flex items-start gap-2 text-sm leading-6 text-emerald-800">
+                            <CheckCircle2
+                              size={18}
+                              className="mt-0.5 shrink-0"
+                            />
+
+                            <span>
+                              <strong>You approved this proposal.</strong>{' '}
+                              According to the current workflow, you can
+                              request cancellation before the information is shared.
+                            </span>
+                          </p>
+
                           <button
                             type="button"
                             disabled={busy}
-                            onClick={() => decide(outreach.id, 'approve')}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                            onClick={() => decide(item.id, 'revoke')}
+                            className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-300 bg-white px-3.5 py-2.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-50"
                           >
-                            <Check size={17} />
-                            Approve sharing
-                          </button>
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => decide(outreach.id, 'decline')}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
-                          >
-                            <X size={17} />
-                            Decline proposal
+                            <X size={14} />
+                            Cancel my approval
                           </button>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {outreach.status === 'candidate_approved' && (
-                      <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                        <p className="flex items-start gap-2 text-sm leading-6 text-emerald-800">
-                          <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-                          <span>
-                            <strong>You approved this proposal.</strong> According
-                            to the current workflow, you can request cancellation
-                            before the information is shared.
-                          </span>
+                      {item.status === 'candidate_declined' && (
+                        <p className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+                          <CheckCircle2 size={16} />
+                          You declined this proposal. No further action is needed.
                         </p>
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => decide(outreach.id, 'revoke')}
-                          className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-300 bg-white px-3.5 py-2.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100 disabled:opacity-50"
-                        >
-                          <X size={14} />
-                          Cancel my approval
-                        </button>
-                      </div>
-                    )}
-
-                    {outreach.status === 'candidate_declined' && (
-                      <p className="mt-4 flex items-center gap-2 text-sm text-slate-500">
-                        <CheckCircle2 size={16} />
-                        You declined this proposal. No further action is needed.
-                      </p>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Panel>
-            ))}
+                </Panel>
+              );
+            })}
           </section>
         </>
       )}
 
-      {/* Updates */}
-      {rq && (
+      {/* Request updates */}
+      {request && (
         <Panel>
           <SectionHeading
             icon={Clock3}
@@ -795,7 +929,7 @@ export default function CareerAssistancePage() {
             description="A timeline of updates recorded for your request."
           />
 
-          {rq.updates.length === 0 ? (
+          {updates.length === 0 ? (
             <EmptyState
               title="No updates yet"
               description="Updates will appear here when there is activity on your request."
@@ -803,15 +937,20 @@ export default function CareerAssistancePage() {
             />
           ) : (
             <ol className="relative space-y-5 border-l-2 border-indigo-100 pl-5">
-              {rq.updates.map((update, index) => (
-                <li key={`${update.created_at}-${index}`} className="relative">
+              {updates.map((update, index) => (
+                <li
+                  key={`${update.created_at || 'update'}-${index}`}
+                  className="relative"
+                >
                   <span className="absolute -left-[27px] top-1 flex h-3 w-3 items-center justify-center rounded-full bg-indigo-500 ring-4 ring-white" />
 
                   <p className="text-sm leading-6 text-slate-700">
                     {update.message}
                   </p>
+
                   <p className="mt-1.5 text-xs text-slate-400">
-                    {dt(update.created_at)} · {update.author === 'team' ? 'TechAbhi team' : 'System'}
+                    {dt(update.created_at)} ·{' '}
+                    {update.author === 'team' ? 'TechAbhi team' : 'System'}
                   </p>
                 </li>
               ))}
@@ -820,21 +959,24 @@ export default function CareerAssistancePage() {
         </Panel>
       )}
 
-      {/* Footer note */}
+      {/* Footer */}
       <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-5">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-sm">
             <HeartHandshake size={20} />
           </div>
+
           <div>
             <h3 className="font-bold text-slate-900">
               Your career, your decisions
             </h3>
+
             <p className="mt-1 text-sm leading-6 text-slate-500">
               Career assistance is optional. Always verify opportunities,
               confirm interview arrangements directly with employers, and
               never pay for a job offer.
             </p>
+
             <Link
               to="/jobs"
               className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-indigo-600 hover:text-indigo-800"

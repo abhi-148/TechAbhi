@@ -5,7 +5,6 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   Building2,
-  CheckCircle2,
   Eye,
   EyeOff,
   Globe,
@@ -20,15 +19,21 @@ import {
   FileText,
   Info,
 } from 'lucide-react';
+
 import { api, REC_KEY } from '../../lib/api';
 import { inputCls, useMeta } from '../../lib/format';
 
 export default function RecruiterAuthPage({ mode }) {
   const reg = mode === 'register';
-  useMeta(reg ? 'Recruiter registration | TechAbhi' : 'Recruiter login | TechAbhi');
-
   const nav = useNavigate();
-  const [f, setF] = useState({
+
+  useMeta(
+    reg
+      ? 'Recruiter Registration | TechAbhi'
+      : 'Recruiter Login | TechAbhi'
+  );
+
+  const [form, setForm] = useState({
     full_name: '',
     email: '',
     password: '',
@@ -37,32 +42,58 @@ export default function RecruiterAuthPage({ mode }) {
     phone: '',
     company_description: '',
   });
-  const [err, setErr] = useState('');
+
+  const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const set = (key) => (e) => {
-    setF((previous) => ({ ...previous, [key]: e.target.value }));
-    if (err) setErr('');
+  const updateField = (key) => (event) => {
+    const value = event.target.value;
+
+    setForm((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+
+    if (error) setError('');
   };
 
-  const submit = async (e) => {
-    e.preventDefault();
+  const submit = async (event) => {
+    event.preventDefault();
+
     if (busy) return;
 
     setBusy(true);
-    setErr('');
+    setError('');
 
     try {
-      const data = await api('/recruiter/' + mode, {
+      const payload = {
+        ...form,
+        full_name: form.full_name.trim(),
+        email: form.email.trim(),
+        company_name: form.company_name.trim(),
+        company_website: form.company_website.trim(),
+        phone: form.phone.trim(),
+        company_description: form.company_description.trim(),
+      };
+
+      const data = await api(`/recruiter/${mode}`, {
         method: 'POST',
-        body: f,
+        body: payload,
       });
 
+      if (!data?.token) {
+        throw new Error(
+          'Authentication succeeded without a session token. Please try again.'
+        );
+      }
+
       localStorage.setItem(REC_KEY, data.token);
-      nav('/recruiter/dashboard');
-    } catch (error) {
-      setErr(error.message || 'Something went wrong. Please try again.');
+      nav('/recruiter/dashboard', { replace: true });
+    } catch (err) {
+      setError(
+        err.message || 'Something went wrong. Please try again.'
+      );
     } finally {
       setBusy(false);
     }
@@ -71,25 +102,54 @@ export default function RecruiterAuthPage({ mode }) {
   const fieldClass = `${inputCls} w-full rounded-xl border-slate-200 bg-white py-3 text-sm transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100`;
   const labelClass = 'mb-2 block text-sm font-semibold text-slate-700';
 
+  const features = [
+    {
+      icon: Users,
+      title: 'Candidate applications',
+      description: 'Review applications submitted through TechAbhi.',
+    },
+    {
+      icon: BriefcaseBusiness,
+      title: 'Job management',
+      description: 'Keep your job opportunities organized.',
+    },
+    {
+      icon: ShieldCheck,
+      title: 'Recruiter workspace',
+      description: 'Manage application status and private notes.',
+    },
+  ];
+
   return (
     <main className="relative min-h-[calc(100vh-5rem)] overflow-hidden bg-slate-50 px-4 py-8 sm:px-6 sm:py-12">
       <div className="pointer-events-none absolute -left-28 top-20 h-72 w-72 rounded-full bg-indigo-100/70 blur-3xl" />
       <div className="pointer-events-none absolute -right-28 bottom-10 h-80 w-80 rounded-full bg-violet-100/70 blur-3xl" />
 
-      <div className={`relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-indigo-950/5 lg:grid-cols-2 ${reg ? 'max-w-7xl' : ''}`}>
+      <div
+        className={`relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-indigo-950/5 lg:grid-cols-2 ${
+          reg ? 'max-w-7xl' : ''
+        }`}
+      >
         <section className="relative isolate flex flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-900 p-7 text-white sm:p-10 lg:min-h-[680px] lg:p-12">
           <div className="pointer-events-none absolute -right-16 -top-10 h-64 w-64 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -right-2 top-6 h-44 w-44 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -bottom-20 -left-10 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl" />
 
           <div className="relative">
-            <Link to="/" className="inline-flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/70">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/70"
+            >
               <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 shadow-lg">
                 <BriefcaseBusiness size={23} />
               </span>
               <span>
-                <span className="block text-lg font-black tracking-tight">TechAbhi</span>
-                <span className="block text-xs text-indigo-200">Recruiter workspace</span>
+                <span className="block text-lg font-black tracking-tight">
+                  TechAbhi
+                </span>
+                <span className="block text-xs text-indigo-200">
+                  Recruiter workspace
+                </span>
               </span>
             </Link>
 
@@ -101,9 +161,15 @@ export default function RecruiterAuthPage({ mode }) {
 
               <h1 className="mt-5 text-3xl font-black leading-tight tracking-tight sm:text-4xl xl:text-5xl">
                 {reg ? (
-                  <>Meet your next <span className="text-violet-300">great hire.</span></>
+                  <>
+                    Meet your next{' '}
+                    <span className="text-violet-300">great hire.</span>
+                  </>
                 ) : (
-                  <>Your next great hire starts <span className="text-violet-300">here.</span></>
+                  <>
+                    Your next great hire starts{' '}
+                    <span className="text-violet-300">here.</span>
+                  </>
                 )}
               </h1>
 
@@ -115,32 +181,21 @@ export default function RecruiterAuthPage({ mode }) {
             </div>
 
             <div className="mt-9 space-y-4">
-              {[
-                {
-                  icon: Users,
-                  title: 'Candidate applications',
-                  description: 'Review applications submitted through TechAbhi.',
-                },
-                {
-                  icon: BriefcaseBusiness,
-                  title: 'Job management',
-                  description: 'Keep your job opportunities organized.',
-                },
-                {
-                  icon: ShieldCheck,
-                  title: 'Recruiter workspace',
-                  description: 'Manage application status and private notes.',
-                },
-              ].map((item) => {
+              {features.map((item) => {
                 const Icon = item.icon;
+
                 return (
                   <div key={item.title} className="flex items-start gap-3">
                     <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-violet-200">
                       <Icon size={17} />
                     </span>
                     <div>
-                      <p className="text-sm font-bold text-white">{item.title}</p>
-                      <p className="mt-1 text-xs leading-5 text-indigo-100/70">{item.description}</p>
+                      <p className="text-sm font-bold text-white">
+                        {item.title}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-indigo-100/70">
+                        {item.description}
+                      </p>
                     </div>
                   </div>
                 );
@@ -175,81 +230,120 @@ export default function RecruiterAuthPage({ mode }) {
 
             {reg && (
               <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                <Info size={19} className="mt-0.5 shrink-0 text-amber-700" />
+                <Info
+                  size={19}
+                  className="mt-0.5 shrink-0 text-amber-700"
+                />
                 <div>
-                  <p className="text-sm font-bold text-amber-900">Account approval required</p>
+                  <p className="text-sm font-bold text-amber-900">
+                    Account approval required
+                  </p>
                   <p className="mt-1 text-xs leading-5 text-amber-800">
-                    New recruiter accounts are reviewed by the TechAbhi team before job posting access is granted. Use your work email and genuine company details.
+                    New recruiter accounts are reviewed by the TechAbhi team
+                    before job posting access is granted. Use your work email
+                    and genuine company details.
                   </p>
                 </div>
               </div>
             )}
 
-            {err && (
-              <div role="alert" className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+            {error && (
+              <div
+                role="alert"
+                className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"
+              >
                 <Info size={18} className="mt-0.5 shrink-0" />
-                <p className="break-words">{err}</p>
+                <p className="break-words">{error}</p>
               </div>
             )}
 
             <form onSubmit={submit} className="space-y-5">
               {reg && (
                 <div>
-                  <label className={labelClass} htmlFor="full_name">Full name</label>
+                  <label className={labelClass} htmlFor="full_name">
+                    Full name
+                  </label>
                   <div className="relative">
-                    <UserRound size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <UserRound
+                      size={17}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
                     <input
                       id="full_name"
+                      name="full_name"
                       className={`${fieldClass} pl-10`}
                       placeholder="Your full name"
                       autoComplete="name"
                       required
-                      value={f.full_name}
-                      onChange={set('full_name')}
+                      value={form.full_name}
+                      onChange={updateField('full_name')}
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className={labelClass} htmlFor="email">Work email</label>
+                <label className={labelClass} htmlFor="email">
+                  Work email
+                </label>
                 <div className="relative">
-                  <Mail size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Mail
+                    size={17}
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
                   <input
                     id="email"
+                    name="email"
                     className={`${fieldClass} pl-10`}
                     type="email"
                     placeholder="you@company.com"
                     autoComplete="email"
                     required
-                    value={f.email}
-                    onChange={set('email')}
+                    value={form.email}
+                    onChange={updateField('email')}
                   />
                 </div>
               </div>
 
               <div>
-                <label className={labelClass} htmlFor="password">Password</label>
+                <label className={labelClass} htmlFor="password">
+                  Password
+                </label>
                 <div className="relative">
-                  <LockKeyhole size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <LockKeyhole
+                    size={17}
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
                   <input
                     id="password"
+                    name="password"
                     className={`${fieldClass} pl-10 pr-12`}
                     type={showPassword ? 'text' : 'password'}
-                    placeholder={reg ? 'Create a password (8+ characters)' : 'Enter your password'}
+                    placeholder={
+                      reg
+                        ? 'Create a password (8+ characters)'
+                        : 'Enter your password'
+                    }
                     autoComplete={reg ? 'new-password' : 'current-password'}
                     minLength={reg ? 8 : undefined}
                     required
-                    value={f.password}
-                    onChange={set('password')}
+                    value={form.password}
+                    onChange={updateField('password')}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((previous) => !previous)}
+                    onClick={() =>
+                      setShowPassword((previous) => !previous)
+                    }
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                     className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                   >
-                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    {showPassword ? (
+                      <EyeOff size={17} />
+                    ) : (
+                      <Eye size={17} />
+                    )}
                   </button>
                 </div>
                 {reg && (
@@ -260,79 +354,116 @@ export default function RecruiterAuthPage({ mode }) {
               </div>
 
               {reg && (
-                <>
-                  <div className="border-t border-slate-100 pt-5">
-                    <div className="mb-4 flex items-center gap-2">
-                      <Building2 size={18} className="text-indigo-600" />
-                      <h3 className="font-bold text-slate-900">Company information</h3>
+                <div className="border-t border-slate-100 pt-5">
+                  <div className="mb-4 flex items-center gap-2">
+                    <Building2 size={18} className="text-indigo-600" />
+                    <h3 className="font-bold text-slate-900">
+                      Company information
+                    </h3>
+                  </div>
+
+                  <div className="space-y-5">
+                    <div>
+                      <label className={labelClass} htmlFor="company_name">
+                        Company name
+                      </label>
+                      <div className="relative">
+                        <Building2
+                          size={17}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          id="company_name"
+                          name="company_name"
+                          className={`${fieldClass} pl-10`}
+                          placeholder="Your company name"
+                          autoComplete="organization"
+                          required
+                          value={form.company_name}
+                          onChange={updateField('company_name')}
+                        />
+                      </div>
                     </div>
 
-                    <div className="space-y-5">
-                      <div>
-                        <label className={labelClass} htmlFor="company_name">Company name</label>
-                        <div className="relative">
-                          <Building2 size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            id="company_name"
-                            className={`${fieldClass} pl-10`}
-                            placeholder="Your company name"
-                            autoComplete="organization"
-                            required
-                            value={f.company_name}
-                            onChange={set('company_name')}
-                          />
-                        </div>
+                    <div>
+                      <label className={labelClass} htmlFor="company_website">
+                        Company website{' '}
+                        <span className="font-normal text-slate-400">
+                          (optional)
+                        </span>
+                      </label>
+                      <div className="relative">
+                        <Globe
+                          size={17}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          id="company_website"
+                          name="company_website"
+                          className={`${fieldClass} pl-10`}
+                          type="url"
+                          placeholder="https://company.com"
+                          autoComplete="url"
+                          value={form.company_website}
+                          onChange={updateField('company_website')}
+                        />
                       </div>
+                    </div>
 
-                      <div>
-                        <label className={labelClass} htmlFor="company_website">Company website <span className="font-normal text-slate-400">(optional)</span></label>
-                        <div className="relative">
-                          <Globe size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            id="company_website"
-                            className={`${fieldClass} pl-10`}
-                            type="url"
-                            placeholder="https://company.com"
-                            autoComplete="url"
-                            value={f.company_website}
-                            onChange={set('company_website')}
-                          />
-                        </div>
+                    <div>
+                      <label className={labelClass} htmlFor="phone">
+                        Phone{' '}
+                        <span className="font-normal text-slate-400">
+                          (optional)
+                        </span>
+                      </label>
+                      <div className="relative">
+                        <Phone
+                          size={17}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                        />
+                        <input
+                          id="phone"
+                          name="phone"
+                          className={`${fieldClass} pl-10`}
+                          type="tel"
+                          placeholder="Contact number"
+                          autoComplete="tel"
+                          value={form.phone}
+                          onChange={updateField('phone')}
+                        />
                       </div>
+                    </div>
 
-                      <div>
-                        <label className={labelClass} htmlFor="phone">Phone <span className="font-normal text-slate-400">(optional)</span></label>
-                        <div className="relative">
-                          <Phone size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            id="phone"
-                            className={`${fieldClass} pl-10`}
-                            type="tel"
-                            placeholder="Contact number"
-                            autoComplete="tel"
-                            value={f.phone}
-                            onChange={set('phone')}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className={labelClass} htmlFor="company_description">About your company <span className="font-normal text-slate-400">(optional)</span></label>
-                        <div className="relative">
-                          <FileText size={17} className="pointer-events-none absolute left-3.5 top-4 text-slate-400" />
-                          <textarea
-                            id="company_description"
-                            className={`${fieldClass} min-h-28 resize-y pl-10`}
-                            rows={4}
-                            placeholder="Briefly describe your company and what you do..."
-                            value={f.company_description}
-                            onChange={set('company_description')}
-                          />
-                        </div>
+                    <div>
+                      <label
+                        className={labelClass}
+                        htmlFor="company_description"
+                      >
+                        About your company{' '}
+                        <span className="font-normal text-slate-400">
+                          (optional)
+                        </span>
+                      </label>
+                      <div className="relative">
+                        <FileText
+                          size={17}
+                          className="pointer-events-none absolute left-3.5 top-4 text-slate-400"
+                        />
+                        <textarea
+                          id="company_description"
+                          name="company_description"
+                          className={`${fieldClass} min-h-28 resize-y pl-10`}
+                          rows={4}
+                          maxLength={2000}
+                          placeholder="Briefly describe your company and what you do..."
+                          value={form.company_description}
+                          onChange={updateField('company_description')}
+                        />
                       </div>
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
               <button
@@ -361,8 +492,9 @@ export default function RecruiterAuthPage({ mode }) {
             </div>
 
             <p className="text-center text-sm text-slate-600">
-              {reg ? 'Already have a recruiter account?' : 'New to TechAbhi recruiter workspace?'}
-              {' '}
+              {reg
+                ? 'Already have a recruiter account?'
+                : 'New to TechAbhi recruiter workspace?'}{' '}
               <Link
                 className="font-bold text-indigo-700 underline decoration-indigo-200 underline-offset-4 hover:text-indigo-900"
                 to={reg ? '/recruiter/login' : '/recruiter/register'}
@@ -380,7 +512,10 @@ export default function RecruiterAuthPage({ mode }) {
       </div>
 
       <p className="relative mt-6 text-center text-xs text-slate-400">
-        <Link to="/" className="font-semibold text-slate-500 hover:text-indigo-700">
+        <Link
+          to="/"
+          className="font-semibold text-slate-500 hover:text-indigo-700"
+        >
           ← Back to TechAbhi
         </Link>
       </p>

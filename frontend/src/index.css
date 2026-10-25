@@ -1,3 +1,256 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ========================================
+   TechAbhi AI — Global Design System
+======================================== */
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --ta-bg: #090d18;
+  --ta-surface: #101727;
+  --ta-surface-raised: #151e31;
+  --ta-border: rgba(255, 255, 255, 0.08);
+  --ta-text: #f1f5ff;
+  --ta-muted: #9aa8c0;
+  --ta-blue: #4485ff;
+  --ta-purple: #8b5cff;
+  --ta-radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--ta-bg);
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    radial-gradient(
+      ellipse at 50% -20%,
+      rgba(68, 133, 255, 0.07),
+      transparent 55%
+    ),
+    var(--ta-bg);
+  color: var(--ta-text);
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font-size: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+pre,
+code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono",
+    Menlo, monospace;
+}
+
+pre {
+  max-width: 100%;
+  tab-size: 2;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+::selection {
+  background: rgba(68, 133, 255, 0.35);
+  color: #ffffff;
+}
+
+/* Accessible keyboard focus */
+
+:focus-visible {
+  outline: 2px solid #8bb4ff;
+  outline-offset: 3px;
+}
+
+/* Premium scrollbar */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #34415b transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #34415b;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #526586;
+  background-clip: padding-box;
+}
+
+/* Form controls */
+
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+::placeholder {
+  color: #7e8ca5;
+  opacity: 1;
+}
+
+/* Reusable glass surface */
+
+.ta-glass {
+  border: 1px solid var(--ta-border);
+  background: rgba(16, 23, 39, 0.82);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+/* Subtle entrance animation */
+
+@keyframes ta-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ta-rise {
+  animation: ta-fade-up 380ms ease-out both;
+}
+
+/* Typing indicator */
+
+@keyframes ta-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+.ta-dot {
+  animation: ta-typing 1.2s infinite ease-in-out;
+}
+
+/* Reduced motion accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Small mobile screens */
+
+@media (max-width: 380px) {
+  html {
+    scrollbar-gutter: auto;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+}

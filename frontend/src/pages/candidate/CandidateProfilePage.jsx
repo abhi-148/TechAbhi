@@ -64,6 +64,7 @@ function SectionHeading({ icon: Icon, title, description, badge }) {
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100">
         <Icon size={21} />
       </div>
+
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-base font-bold tracking-tight text-slate-900 sm:text-lg">
@@ -75,6 +76,7 @@ function SectionHeading({ icon: Icon, title, description, badge }) {
             </span>
           )}
         </div>
+
         {description && (
           <p className="mt-1 text-sm leading-6 text-slate-500">
             {description}
@@ -87,20 +89,31 @@ function SectionHeading({ icon: Icon, title, description, badge }) {
 
 function ProfileSection({ children, className = '' }) {
   return (
-    <section className={cx(
-      'rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7',
-      className
-    )}>
+    <section
+      className={cx(
+        'rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-7',
+        className
+      )}
+    >
       {children}
     </section>
   );
 }
 
-function Rows({ title, description, rows = [], setRows, fields, icon: Icon }) {
+function Rows({
+  title,
+  description,
+  rows = [],
+  setRows,
+  fields,
+  icon: Icon,
+}) {
   const updateRow = (index, key, value) => {
-    setRows(rows.map((row, i) => (
-      i === index ? { ...row, [key]: value } : row
-    )));
+    setRows(
+      rows.map((row, i) =>
+        i === index ? { ...row, [key]: value } : row
+      )
+    );
   };
 
   const removeRow = (index) => {
@@ -120,6 +133,7 @@ function Rows({ title, description, rows = [], setRows, fields, icon: Icon }) {
               <Icon size={18} />
             </div>
           )}
+
           <div>
             <h3 className="text-sm font-bold text-slate-800">{title}</h3>
             {description && (
@@ -133,7 +147,7 @@ function Rows({ title, description, rows = [], setRows, fields, icon: Icon }) {
         <button
           type="button"
           onClick={addRow}
-          className="inline-flex min-h-9 items-center justify-center gap-1.5 self-start rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 transition hover:bg-indigo-50 sm:self-center"
+          className="inline-flex min-h-9 items-center justify-center gap-1.5 self-start rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:self-center"
         >
           <Plus size={15} />
           Add {title.replace(/s$/, '')}
@@ -145,16 +159,19 @@ function Rows({ title, description, rows = [], setRows, fields, icon: Icon }) {
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm">
             {Icon ? <Icon size={19} /> : <Plus size={19} />}
           </div>
+
           <p className="mt-3 text-sm font-semibold text-slate-600">
             Nothing added yet
           </p>
+
           <p className="mt-1 text-xs text-slate-400">
             Add details to build a more complete profile.
           </p>
+
           <button
             type="button"
             onClick={addRow}
-            className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-800"
+            className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-800 focus:outline-none focus:underline"
           >
             + Add your first entry
           </button>
@@ -164,7 +181,7 @@ function Rows({ title, description, rows = [], setRows, fields, icon: Icon }) {
           {rows.map((row, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5"
+              className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-indigo-100 sm:p-5"
             >
               <div className="mb-4 flex items-center justify-between gap-3">
                 <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -177,7 +194,7 @@ function Rows({ title, description, rows = [], setRows, fields, icon: Icon }) {
                 <button
                   type="button"
                   onClick={() => removeRow(index)}
-                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-500 transition hover:bg-rose-50 hover:text-rose-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-500 transition hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
                   aria-label={`Remove ${title} entry ${index + 1}`}
                 >
                   <Trash2 size={14} />
@@ -194,13 +211,17 @@ function Rows({ title, description, rows = [], setRows, fields, icon: Icon }) {
                     <span className="mb-1.5 block text-xs font-semibold capitalize text-slate-600">
                       {key.replaceAll('_', ' ')}
                     </span>
+
                     {key === 'details' ? (
                       <textarea
                         className="min-h-24 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10"
                         rows={3}
+                        maxLength={3000}
                         placeholder={placeholder}
                         value={row[key] || ''}
-                        onChange={(event) => updateRow(index, key, event.target.value)}
+                        onChange={(event) =>
+                          updateRow(index, key, event.target.value)
+                        }
                       />
                     ) : (
                       <input
@@ -208,9 +229,12 @@ function Rows({ title, description, rows = [], setRows, fields, icon: Icon }) {
                           inputCls,
                           'h-11 rounded-xl border-slate-200 bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
                         )}
+                        maxLength={250}
                         placeholder={placeholder}
                         value={row[key] || ''}
-                        onChange={(event) => updateRow(index, key, event.target.value)}
+                        onChange={(event) =>
+                          updateRow(index, key, event.target.value)
+                        }
                       />
                     )}
                   </label>
@@ -240,7 +264,9 @@ function AlertMessage({ type, children, onClose }) {
       <div className="mt-0.5 shrink-0">
         {success ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
       </div>
+
       <div className="min-w-0 flex-1 leading-6">{children}</div>
+
       {onClose && (
         <button
           type="button"
@@ -257,10 +283,14 @@ function AlertMessage({ type, children, onClose }) {
 
 function LoadingProfile() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" role="status" aria-label="Loading profile">
       <div className="h-48 animate-pulse rounded-3xl bg-slate-200" />
+
       {[1, 2, 3].map((item) => (
-        <div key={item} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <div
+          key={item}
+          className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6"
+        >
           <div className="h-5 w-44 animate-pulse rounded bg-slate-100" />
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
@@ -268,6 +298,8 @@ function LoadingProfile() {
           </div>
         </div>
       ))}
+
+      <span className="sr-only">Loading your profile…</span>
     </div>
   );
 }
@@ -280,45 +312,61 @@ export default function CandidateProfilePage() {
   const [busy, setBusy] = useState(false);
   const [ai, setAi] = useState(null);
   const [aiBusy, setAiBusy] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
+
+    setErr('');
 
     api('/candidate/profile', { candidate: true })
       .then((data) => {
         if (!active) return;
 
         const profile = data.profile || {};
+
         setName(data.full_name || '');
+
         setF({
           ...EMPTY_PROFILE,
           ...profile,
           skills: Array.isArray(profile.skills)
             ? profile.skills.join(', ')
             : profile.skills || '',
-          education: Array.isArray(profile.education) ? profile.education : [],
-          experience: Array.isArray(profile.experience) ? profile.experience : [],
-          projects: Array.isArray(profile.projects) ? profile.projects : [],
+          education: Array.isArray(profile.education)
+            ? profile.education
+            : [],
+          experience: Array.isArray(profile.experience)
+            ? profile.experience
+            : [],
+          projects: Array.isArray(profile.projects)
+            ? profile.projects
+            : [],
         });
       })
       .catch((error) => {
-        if (active) setErr(error.message || 'Unable to load your profile.');
+        if (active) {
+          setErr(error.message || 'Unable to load your profile.');
+        }
       });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [loadAttempt]);
 
   const set = (key) => (event) => {
     const value = event.target.value;
+
     setF((previous) => ({ ...previous, [key]: value }));
     setMsg('');
+    setErr('');
   };
 
   const updateRows = (key, rows) => {
     setF((previous) => ({ ...previous, [key]: rows }));
     setMsg('');
+    setErr('');
   };
 
   const completeness = useMemo(() => {
@@ -343,7 +391,13 @@ export default function CandidateProfilePage() {
 
   const save = async (event) => {
     event?.preventDefault();
-    if (busy || !f) return;
+
+    if (busy || aiBusy || !f) return;
+
+    if (!name.trim()) {
+      setErr('Please enter your full name before saving your profile.');
+      return;
+    }
 
     setBusy(true);
     setErr('');
@@ -352,9 +406,17 @@ export default function CandidateProfilePage() {
     try {
       await api('/candidate/profile', {
         method: 'PUT',
-        body: { ...f, full_name: name },
+        body: {
+          ...f,
+          full_name: name.trim(),
+          skills: f.skills
+            .split(',')
+            .map((skill) => skill.trim())
+            .filter(Boolean),
+        },
         candidate: true,
       });
+
       setMsg('Your profile has been saved successfully.');
     } catch (error) {
       setErr(error.message || 'Unable to save your profile.');
@@ -364,7 +426,7 @@ export default function CandidateProfilePage() {
   };
 
   const extract = async () => {
-    if (aiBusy) return;
+    if (aiBusy || busy || !f) return;
 
     setAiBusy(true);
     setErr('');
@@ -383,22 +445,29 @@ export default function CandidateProfilePage() {
         ...current,
         headline: profile.headline || current.headline,
         summary: profile.summary || current.summary,
-        career_interests: profile.career_interests || current.career_interests,
+        career_interests:
+          profile.career_interests || current.career_interests,
         skills: profile.skills?.length
-          ? profile.skills.join(', ')
+          ? Array.isArray(profile.skills)
+            ? profile.skills.join(', ')
+            : profile.skills
           : current.skills,
-        education: profile.education?.length
-          ? profile.education
-          : current.education,
-        experience: profile.experience?.length
-          ? profile.experience
-          : current.experience,
-        projects: profile.projects?.length
-          ? profile.projects
-          : current.projects,
+        education:
+          profile.education?.length > 0
+            ? profile.education
+            : current.education,
+        experience:
+          profile.experience?.length > 0
+            ? profile.experience
+            : current.experience,
+        projects:
+          profile.projects?.length > 0
+            ? profile.projects
+            : current.projects,
       }));
 
       setAi(Array.isArray(data.warnings) ? data.warnings : []);
+      setMsg('Resume details drafted. Review them before saving.');
     } catch (error) {
       setErr(error.message || 'Could not extract details from your resume.');
     } finally {
@@ -409,17 +478,27 @@ export default function CandidateProfilePage() {
   if (!f) {
     if (err) {
       return (
-        <div className="rounded-2xl border border-rose-200 bg-white p-7 text-center">
-          <AlertCircle size={28} className="mx-auto text-rose-500" />
+        <div className="rounded-2xl border border-rose-200 bg-white p-7 text-center shadow-sm">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+            <AlertCircle size={26} />
+          </div>
+
           <h2 className="mt-3 text-lg font-bold text-slate-900">
             Couldn’t load your profile
           </h2>
-          <p className="mt-2 text-sm text-rose-700">{err}</p>
+
+          <p className="mt-2 text-sm leading-6 text-rose-700">{err}</p>
+
           <button
             type="button"
-            onClick={() => window.location.reload()}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white hover:bg-indigo-700"
+            onClick={() => {
+              setF(null);
+              setErr('');
+              setLoadAttempt((attempt) => attempt + 1);
+            }}
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20"
           >
+            <ArrowRight size={16} />
             Try again
           </button>
         </div>
@@ -430,7 +509,7 @@ export default function CandidateProfilePage() {
   }
 
   return (
-    <div className="space-y-6 pb-6">
+    <div className="mx-auto max-w-6xl space-y-6 pb-8">
       {/* Profile hero */}
       <section className="relative isolate overflow-hidden rounded-3xl bg-[#111735] p-6 shadow-lg shadow-indigo-950/10 sm:p-8">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
@@ -458,18 +537,33 @@ export default function CandidateProfilePage() {
               Keep your experience, skills and career preferences organized
               in one place.
             </p>
+
+            {name.trim() && (
+              <p className="mt-3 text-sm font-medium text-indigo-200">
+                Welcome, {name.trim()}
+              </p>
+            )}
           </div>
 
           <div className="shrink-0 rounded-2xl border border-white/15 bg-white/[0.07] p-4 sm:min-w-36">
             <p className="text-xs font-medium text-slate-300">
               Profile progress
             </p>
+
             <div className="mt-1 flex items-baseline gap-1">
               <span className="text-3xl font-extrabold text-white">
                 {completeness}%
               </span>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
+
+            <div
+              className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={completeness}
+              aria-label="Profile completion"
+            >
               <div
                 className="h-full rounded-full bg-gradient-to-r from-indigo-300 to-violet-300 transition-all duration-500"
                 style={{ width: `${completeness}%` }}
@@ -484,6 +578,7 @@ export default function CandidateProfilePage() {
         <AlertMessage type="error" onClose={() => setErr('')}>
           <p className="font-bold">Something needs your attention</p>
           <p className="mt-1">{err}</p>
+
           {err.toLowerCase().includes('resume') && (
             <Link
               className="mt-2 inline-flex items-center gap-1 font-bold underline underline-offset-4"
@@ -516,6 +611,7 @@ export default function CandidateProfilePage() {
               <h2 className="text-lg font-extrabold tracking-tight text-slate-900">
                 Resume-to-profile assistant
               </h2>
+
               <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-700">
                 AI assisted
               </span>
@@ -527,7 +623,10 @@ export default function CandidateProfilePage() {
             </p>
 
             <div className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500">
-              <CircleHelp size={15} className="mt-0.5 shrink-0 text-indigo-500" />
+              <CircleHelp
+                size={15}
+                className="mt-0.5 shrink-0 text-indigo-500"
+              />
               Review the extracted details carefully. Nothing is saved until
               you click Save profile.
             </div>
@@ -535,15 +634,17 @@ export default function CandidateProfilePage() {
             <button
               type="button"
               onClick={extract}
-              disabled={aiBusy}
-              className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={aiBusy || busy}
+              className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {aiBusy ? (
                 <LoaderCircle size={17} className="animate-spin" />
               ) : (
                 <Sparkles size={17} />
               )}
+
               {aiBusy ? 'Reading your resume…' : 'Fill profile from resume'}
+
               {!aiBusy && <ArrowRight size={16} />}
             </button>
 
@@ -553,6 +654,7 @@ export default function CandidateProfilePage() {
                   <Lightbulb size={17} />
                   Draft prepared — please review
                 </p>
+
                 <p className="mt-1 leading-6">
                   AI can make mistakes. Check all extracted fields before
                   saving your profile.
@@ -561,7 +663,10 @@ export default function CandidateProfilePage() {
                 {ai.length > 0 && (
                   <ul className="mt-3 space-y-1.5">
                     {ai.map((warning, index) => (
-                      <li key={`${warning}-${index}`} className="flex gap-2 leading-5">
+                      <li
+                        key={`${warning}-${index}`}
+                        className="flex gap-2 leading-5"
+                      >
                         <span aria-hidden="true">•</span>
                         <span>{warning}</span>
                       </li>
@@ -587,13 +692,18 @@ export default function CandidateProfilePage() {
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Full name">
               <input
-                className={cx(inputCls, 'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10')}
+                className={cx(
+                  inputCls,
+                  'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                )}
                 autoComplete="name"
                 maxLength={120}
+                required
                 value={name}
                 onChange={(event) => {
                   setName(event.target.value);
                   setMsg('');
+                  setErr('');
                 }}
                 placeholder="Enter your full name"
               />
@@ -604,7 +714,10 @@ export default function CandidateProfilePage() {
               hint="Example: Computer Science Graduate | React Developer"
             >
               <input
-                className={cx(inputCls, 'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10')}
+                className={cx(
+                  inputCls,
+                  'h-12 rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                )}
                 maxLength={200}
                 value={f.headline || ''}
                 onChange={set('headline')}
@@ -625,6 +738,7 @@ export default function CandidateProfilePage() {
                 onChange={set('summary')}
                 placeholder="Tell employers about your experience, skills and goals…"
               />
+
               <span className="mt-1 block text-right text-xs text-slate-400">
                 {(f.summary || '').length}/3000
               </span>
@@ -732,9 +846,16 @@ export default function CandidateProfilePage() {
               hint="You can enter a city, region or Remote."
             >
               <div className="relative">
-                <MapPin size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <MapPin
+                  size={17}
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
                 <input
-                  className={cx(inputCls, 'h-12 rounded-xl border-slate-200 pl-10 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10')}
+                  className={cx(
+                    inputCls,
+                    'h-12 rounded-xl border-slate-200 pl-10 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                  )}
                   value={f.preferred_location || ''}
                   onChange={set('preferred_location')}
                   placeholder="e.g. Ahmedabad, Pune"
@@ -745,32 +866,50 @@ export default function CandidateProfilePage() {
             <Field label="Preferred employment type">
               <div className="relative">
                 <select
-                  className={cx(inputCls, 'h-12 appearance-none rounded-xl border-slate-200 pr-10 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10')}
+                  className={cx(
+                    inputCls,
+                    'h-12 appearance-none rounded-xl border-slate-200 pr-10 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                  )}
                   value={f.preferred_employment_type || ''}
                   onChange={set('preferred_employment_type')}
                 >
                   <option value="">Any employment type</option>
                   {Object.entries(TYPE_LABEL).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
                   ))}
                 </select>
-                <ChevronDown size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+
+                <ChevronDown
+                  size={16}
+                  className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
               </div>
             </Field>
 
             <Field label="Preferred work arrangement">
               <div className="relative">
                 <select
-                  className={cx(inputCls, 'h-12 appearance-none rounded-xl border-slate-200 pr-10 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10')}
+                  className={cx(
+                    inputCls,
+                    'h-12 appearance-none rounded-xl border-slate-200 pr-10 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10'
+                  )}
                   value={f.preferred_work_mode || ''}
                   onChange={set('preferred_work_mode')}
                 >
                   <option value="">Any work arrangement</option>
                   {Object.entries(MODE_LABEL).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
                   ))}
                 </select>
-                <ChevronDown size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+
+                <ChevronDown
+                  size={16}
+                  className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
               </div>
             </Field>
 
@@ -798,6 +937,7 @@ export default function CandidateProfilePage() {
               <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
                 <Check size={17} />
               </div>
+
               <div>
                 <p className="text-sm font-bold text-slate-800">
                   Keep your profile up to date
@@ -818,6 +958,7 @@ export default function CandidateProfilePage() {
               ) : (
                 <Save size={17} />
               )}
+
               {busy ? 'Saving profile…' : 'Save profile'}
             </button>
           </div>
@@ -826,8 +967,8 @@ export default function CandidateProfilePage() {
 
       <p className="flex items-start gap-2 px-1 text-xs leading-5 text-slate-400">
         <CircleHelp size={15} className="mt-0.5 shrink-0" />
-        Your profile is private according to the current product description.
-        Review your website's actual access controls and privacy policy before launch.
+        Keep your profile details accurate and review your privacy settings
+        before sharing personal information.
       </p>
     </div>
   );

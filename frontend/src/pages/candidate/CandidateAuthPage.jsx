@@ -19,6 +19,7 @@ import { inputCls, useMeta, safeNext } from '../../lib/format';
 
 export default function CandidateAuthPage({ mode }) {
   const reg = mode === 'register';
+
   useMeta(reg ? 'Create account | TechAbhi' : 'Log in | TechAbhi');
 
   const nav = useNavigate();
@@ -29,6 +30,7 @@ export default function CandidateAuthPage({ mode }) {
     email: '',
     password: '',
   });
+
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -38,23 +40,39 @@ export default function CandidateAuthPage({ mode }) {
       ...previous,
       [key]: event.target.value,
     }));
+
+    setErr('');
   };
 
   const submit = async (event) => {
     event.preventDefault();
+
     if (busy) return;
 
     setBusy(true);
     setErr('');
 
     try {
-      const d = await api('/candidate/' + mode, {
+      const body = {
+        email: f.email.trim().toLowerCase(),
+        password: f.password,
+        ...(reg ? { full_name: f.full_name.trim() } : {}),
+      };
+
+      const d = await api(`/candidate/${mode}`, {
         method: 'POST',
-        body: f,
+        body,
       });
 
+      if (!d?.token) {
+        throw new Error('Authentication succeeded without a session token. Please try again.');
+      }
+
       localStorage.setItem(CAND_KEY, d.token);
-      nav(safeNext(sp.get('next'), '/candidate/dashboard'));
+
+      nav(safeNext(sp.get('next'), '/candidate/dashboard'), {
+        replace: true,
+      });
     } catch (error) {
       setErr(error.message || 'Something went wrong. Please try again.');
     } finally {
@@ -71,7 +89,7 @@ export default function CandidateAuthPage({ mode }) {
       </div>
 
       <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_25px_90px_-35px_rgba(31,41,91,0.25)] lg:grid-cols-[0.95fr_1.05fr]">
-        {/* Left brand panel */}
+        {/* Brand panel */}
         <aside className="relative isolate hidden overflow-hidden bg-[#111735] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-12">
           <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
             <div className="absolute -right-20 top-10 h-72 w-72 rounded-full bg-indigo-500/25 blur-3xl" />
@@ -83,6 +101,7 @@ export default function CandidateAuthPage({ mode }) {
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-indigo-200 ring-1 ring-white/15">
               <BriefcaseBusiness size={22} />
             </div>
+
             <span className="text-xl font-extrabold tracking-tight">
               Tech<span className="text-indigo-300">Abhi</span>
             </span>
@@ -95,7 +114,9 @@ export default function CandidateAuthPage({ mode }) {
             </div>
 
             <h1 className="mt-7 text-4xl font-extrabold leading-tight tracking-tight xl:text-5xl">
-              {reg ? 'Make room for your next big move.' : 'Your next opportunity is waiting.'}
+              {reg
+                ? 'Make room for your next big move.'
+                : 'Your next opportunity is waiting.'}
             </h1>
 
             <p className="mt-5 max-w-sm text-sm leading-7 text-slate-300">
@@ -110,8 +131,14 @@ export default function CandidateAuthPage({ mode }) {
                 'Keep track of your job applications',
                 'Take control of your career journey',
               ].map((item) => (
-                <div key={item} className="flex items-center gap-3 text-sm text-slate-200">
-                  <CheckCircle2 size={18} className="shrink-0 text-indigo-300" />
+                <div
+                  key={item}
+                  className="flex items-center gap-3 text-sm text-slate-200"
+                >
+                  <CheckCircle2
+                    size={18}
+                    className="shrink-0 text-indigo-300"
+                  />
                   {item}
                 </div>
               ))}
@@ -124,13 +151,14 @@ export default function CandidateAuthPage({ mode }) {
           </div>
         </aside>
 
-        {/* Form panel */}
+        {/* Authentication form */}
         <section className="p-5 sm:p-9 lg:p-10 xl:p-12">
           <div className="mb-8 flex items-center justify-between lg:hidden">
             <Link to="/" className="inline-flex items-center gap-2.5">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                 <BriefcaseBusiness size={20} />
               </div>
+
               <span className="text-lg font-extrabold tracking-tight text-slate-900">
                 Tech<span className="text-indigo-600">Abhi</span>
               </span>
@@ -169,9 +197,12 @@ export default function CandidateAuthPage({ mode }) {
               <div className="mt-0.5 shrink-0">
                 <ShieldCheck size={17} />
               </div>
-              <div>
-                <p className="font-bold">Unable to {reg ? 'create account' : 'log in'}</p>
-                <p className="mt-1 leading-6">{err}</p>
+
+              <div className="min-w-0">
+                <p className="font-bold">
+                  Unable to {reg ? 'create account' : 'log in'}
+                </p>
+                <p className="mt-1 break-words leading-6">{err}</p>
               </div>
             </div>
           )}
@@ -179,13 +210,22 @@ export default function CandidateAuthPage({ mode }) {
           <form onSubmit={submit} className="space-y-5">
             {reg && (
               <div>
-                <label htmlFor="candidate-name" className="mb-2 block text-sm font-semibold text-slate-700">
+                <label
+                  htmlFor="candidate-name"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
                   Full name
                 </label>
+
                 <div className="relative">
-                  <UserRound size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <UserRound
+                    size={17}
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+
                   <input
                     id="candidate-name"
+                    name="full_name"
                     className={`${inputCls} h-12 rounded-xl border-slate-200 bg-slate-50/70 pl-11 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10`}
                     placeholder="Enter your full name"
                     autoComplete="name"
@@ -199,18 +239,28 @@ export default function CandidateAuthPage({ mode }) {
             )}
 
             <div>
-              <label htmlFor="candidate-email" className="mb-2 block text-sm font-semibold text-slate-700">
+              <label
+                htmlFor="candidate-email"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
                 Email address
               </label>
+
               <div className="relative">
-                <Mail size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Mail
+                  size={17}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
                 <input
                   id="candidate-email"
+                  name="email"
                   className={`${inputCls} h-12 rounded-xl border-slate-200 bg-slate-50/70 pl-11 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10`}
                   type="email"
                   placeholder="you@example.com"
                   autoComplete="email"
                   required
+                  maxLength={254}
                   value={f.email}
                   onChange={set('email')}
                 />
@@ -219,21 +269,34 @@ export default function CandidateAuthPage({ mode }) {
 
             <div>
               <div className="mb-2 flex items-center justify-between gap-2">
-                <label htmlFor="candidate-password" className="text-sm font-semibold text-slate-700">
+                <label
+                  htmlFor="candidate-password"
+                  className="text-sm font-semibold text-slate-700"
+                >
                   Password
                 </label>
+
                 {reg && (
-                  <span className="text-xs text-slate-400">At least 8 characters</span>
+                  <span className="text-xs text-slate-400">
+                    At least 8 characters
+                  </span>
                 )}
               </div>
 
               <div className="relative">
-                <LockKeyhole size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <LockKeyhole
+                  size={17}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
                 <input
                   id="candidate-password"
+                  name="password"
                   className={`${inputCls} h-12 rounded-xl border-slate-200 bg-slate-50/70 pl-11 pr-12 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10`}
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={reg ? 'Create a strong password' : 'Enter your password'}
+                  placeholder={
+                    reg ? 'Create a strong password' : 'Enter your password'
+                  }
                   autoComplete={reg ? 'new-password' : 'current-password'}
                   required
                   minLength={reg ? 8 : undefined}
@@ -244,10 +307,15 @@ export default function CandidateAuthPage({ mode }) {
                 <button
                   type="button"
                   onClick={() => setShowPassword((visible) => !visible)}
-                  className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                  className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
                 >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showPassword ? (
+                    <EyeOff size={17} />
+                  ) : (
+                    <Eye size={17} />
+                  )}
                 </button>
               </div>
             </div>
@@ -262,13 +330,16 @@ export default function CandidateAuthPage({ mode }) {
                 : reg
                   ? 'Create free account'
                   : 'Sign in to your account'}
+
               {!busy && <ArrowRight size={17} />}
             </button>
           </form>
 
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-slate-100" />
-            <span className="text-xs text-slate-400">YOUR CAREER JOURNEY</span>
+            <span className="text-xs text-slate-400">
+              YOUR CAREER JOURNEY
+            </span>
             <div className="h-px flex-1 bg-slate-100" />
           </div>
 

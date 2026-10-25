@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   ChevronRight,
   CircleAlert,
-  Clock3,
   Copy,
   ExternalLink,
   Eye,
@@ -20,30 +19,41 @@ import {
   Plus,
   RefreshCw,
   Save,
+  ShieldCheck,
   Sparkles,
   Trash2,
-  TrendingUp,
   Users,
   XCircle,
 } from 'lucide-react';
 import { api } from '../../lib/api';
-import { btnGhost, btnPrimary, inputCls, fmtDate, publicUrl } from '../../lib/format';
+import { inputCls, fmtDate, publicUrl } from '../../lib/format';
 
 function ErrorBanner({ message, onRetry }) {
   return (
-    <div role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+    <div
+      role="alert"
+      className="rounded-2xl border border-rose-200 bg-rose-50 p-4"
+    >
       <div className="flex items-start gap-3">
-        <CircleAlert size={19} className="mt-0.5 shrink-0 text-rose-600" />
+        <CircleAlert
+          size={19}
+          className="mt-0.5 shrink-0 text-rose-600"
+        />
+
         <div className="min-w-0 flex-1">
           <p className="font-bold text-rose-900">Something went wrong</p>
-          <p className="mt-1 break-words text-sm text-rose-700">{message}</p>
+          <p className="mt-1 break-words text-sm text-rose-700">
+            {message}
+          </p>
+
           {onRetry && (
             <button
               type="button"
               onClick={onRetry}
               className="mt-3 inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
             >
-              <RefreshCw size={14} /> Try again
+              <RefreshCw size={14} />
+              Try again
             </button>
           )}
         </div>
@@ -55,34 +65,62 @@ function ErrorBanner({ message, onRetry }) {
 function LoadingPanel({ text = 'Loading your workspace...' }) {
   return (
     <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-6 text-center">
-      <LoaderCircle size={28} className="animate-spin text-indigo-600" />
+      <LoaderCircle
+        size={28}
+        className="animate-spin text-indigo-600"
+      />
       <p className="mt-3 font-semibold text-slate-800">{text}</p>
-      <p className="mt-1 text-sm text-slate-500">Please wait a moment.</p>
+      <p className="mt-1 text-sm text-slate-500">
+        Please wait a moment.
+      </p>
     </div>
   );
 }
 
-function PageHero({ eyebrow, title, description, icon: Icon, action }) {
+function PageHero({
+  eyebrow,
+  title,
+  description,
+  icon: Icon,
+  action,
+}) {
   return (
     <section className="relative isolate overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-900 px-6 py-8 text-white shadow-xl shadow-indigo-950/10 sm:px-9 sm:py-10">
       <div className="pointer-events-none absolute -right-12 -top-16 h-64 w-64 rounded-full border border-white/10" />
       <div className="pointer-events-none absolute -right-1 -top-5 h-44 w-44 rounded-full border border-white/10" />
       <div className="pointer-events-none absolute -bottom-24 right-1/3 h-48 w-48 rounded-full bg-violet-500/20 blur-3xl" />
+
       <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
         <div className="max-w-2xl">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-indigo-100">
-            <Icon size={15} /> {eyebrow}
+            {Icon && <Icon size={15} />}
+            {eyebrow}
           </div>
-          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{title}</h1>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-indigo-100/85 sm:text-base">{description}</p>
+
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+            {title}
+          </h1>
+
+          <p className="mt-3 max-w-xl text-sm leading-6 text-indigo-100/85 sm:text-base">
+            {description}
+          </p>
         </div>
-        {action && <div className="relative shrink-0">{action}</div>}
+
+        {action && (
+          <div className="relative shrink-0">{action}</div>
+        )}
       </div>
     </section>
   );
 }
 
-function StatCard({ label, value, note, icon: Icon, color = 'indigo' }) {
+function StatCard({
+  label,
+  value,
+  note,
+  icon: Icon,
+  color = 'indigo',
+}) {
   const tones = {
     indigo: 'bg-indigo-50 text-indigo-700',
     violet: 'bg-violet-50 text-violet-700',
@@ -96,31 +134,53 @@ function StatCard({ label, value, note, icon: Icon, color = 'indigo' }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">{value ?? 0}</p>
-          {note && <p className="mt-1 text-xs leading-5 text-slate-400">{note}</p>}
+
+          <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+            {value ?? 0}
+          </p>
+
+          {note && (
+            <p className="mt-1 text-xs leading-5 text-slate-400">
+              {note}
+            </p>
+          )}
         </div>
-        <div className={`rounded-xl p-3 ${tones[color] || tones.indigo}`}>
-          <Icon size={21} />
-        </div>
+
+        {Icon && (
+          <div className={`rounded-xl p-3 ${tones[color] || tones.indigo}`}>
+            <Icon size={21} />
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function EmptyState({ icon: Icon, title, description, action }) {
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action = false,
+}) {
   return (
     <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-        <Icon size={25} />
+        {Icon && <Icon size={25} />}
       </div>
+
       <h3 className="mt-4 font-bold text-slate-900">{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
+
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+        {description}
+      </p>
+
       {action && (
         <Link
           to="/recruiter/jobs/new"
           className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700"
         >
-          <Plus size={16} /> Create a job
+          <Plus size={16} />
+          Create a job
         </Link>
       )}
     </div>
@@ -133,8 +193,13 @@ function StatusBadge({ status }) {
     published: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
     closed: 'bg-amber-50 text-amber-700 ring-amber-200',
   };
+
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold capitalize ring-1 ring-inset ${styles[status] || styles.draft}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold capitalize ring-1 ring-inset ${
+        styles[status] || styles.draft
+      }`}
+    >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {status || 'Unknown'}
     </span>
@@ -149,8 +214,12 @@ export function RecruiterDashboardPage() {
 
   const load = useCallback(async () => {
     setErr('');
+
     try {
-      const result = await api('/recruiter/dashboard', { recruiter: true });
+      const result = await api('/recruiter/dashboard', {
+        recruiter: true,
+      });
+
       setData(result);
     } catch (error) {
       setErr(error.message || 'Unable to load the dashboard.');
@@ -161,19 +230,25 @@ export function RecruiterDashboardPage() {
     load();
   }, [load]);
 
-  if (err && !data) return <ErrorBanner message={err} onRetry={load} />;
-  if (!data) return <LoadingPanel text="Loading your hiring overview..." />;
+  if (err && !data) {
+    return <ErrorBanner message={err} onRetry={load} />;
+  }
+
+  if (!data) {
+    return <LoadingPanel text="Loading your hiring overview..." />;
+  }
 
   const applications = data.applications || {};
   const jobs = data.jobs || {};
   const events = data.events || {};
-  const recent = data.recent || [];
+  const recent = Array.isArray(data.recent) ? data.recent : [];
 
   const totalApplications = Object.entries(applications)
     .filter(([key]) => key !== 'withdrawn')
     .reduce((sum, [, value]) => sum + (Number(value) || 0), 0);
 
-  const jobTotal = (Number(jobs.published) || 0) +
+  const jobTotal =
+    (Number(jobs.published) || 0) +
     (Number(jobs.draft) || 0) +
     (Number(jobs.closed) || 0);
 
@@ -189,7 +264,8 @@ export function RecruiterDashboardPage() {
             to="/recruiter/jobs/new"
             className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-indigo-950 shadow-lg transition hover:bg-indigo-50"
           >
-            <Plus size={17} /> Post a job
+            <Plus size={17} />
+            Post a job
           </Link>
         }
       />
@@ -199,42 +275,113 @@ export function RecruiterDashboardPage() {
       <section>
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-black text-slate-950">Job overview</h2>
-            <p className="mt-1 text-sm text-slate-500">A snapshot of your current job listings.</p>
+            <h2 className="text-lg font-black text-slate-950">
+              Job overview
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              A snapshot of your current job listings.
+            </p>
           </div>
-          <Link to="/recruiter/jobs" className="inline-flex items-center gap-1 text-sm font-bold text-indigo-700 hover:text-indigo-900">
+
+          <Link
+            to="/recruiter/jobs"
+            className="inline-flex items-center gap-1 text-sm font-bold text-indigo-700 hover:text-indigo-900"
+          >
             Manage jobs <ChevronRight size={16} />
           </Link>
         </div>
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Published jobs" value={jobs.published} icon={BriefcaseBusiness} color="emerald" />
-          <StatCard label="Drafts" value={jobs.draft} icon={FileText} color="amber" />
-          <StatCard label="Closed jobs" value={jobs.closed} icon={XCircle} color="sky" />
-          <StatCard label="All job listings" value={jobTotal} icon={Building2} note="Published, draft and closed" color="violet" />
+          <StatCard
+            label="Published jobs"
+            value={jobs.published}
+            icon={BriefcaseBusiness}
+            color="emerald"
+          />
+          <StatCard
+            label="Drafts"
+            value={jobs.draft}
+            icon={FileText}
+            color="amber"
+          />
+          <StatCard
+            label="Closed jobs"
+            value={jobs.closed}
+            icon={XCircle}
+            color="sky"
+          />
+          <StatCard
+            label="All job listings"
+            value={jobTotal}
+            icon={Building2}
+            note="Published, draft and closed"
+            color="violet"
+          />
         </div>
       </section>
 
       <section>
         <div className="mb-4">
-          <h2 className="text-lg font-black text-slate-950">Application & engagement</h2>
-          <p className="mt-1 text-sm text-slate-500">Understand candidate activity across your job listings.</p>
+          <h2 className="text-lg font-black text-slate-950">
+            Application & engagement
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Understand candidate activity across your job listings.
+          </p>
         </div>
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Applications received" value={totalApplications} icon={Users} note="Submitted through TechAbhi" color="indigo" />
-          <StatCard label="New applications" value={applications.new} icon={Sparkles} color="sky" />
-          <StatCard label="Shortlisted" value={applications.shortlisted} icon={CheckCircle2} color="emerald" />
-          <StatCard label="Job page views" value={events.view} icon={Eye} note="One per browser session" color="violet" />
-          <StatCard label="External apply clicks" value={events.apply_click} icon={ExternalLink} note="Not confirmed applications" color="amber" />
+          <StatCard
+            label="Applications received"
+            value={totalApplications}
+            icon={Users}
+            note="Submitted through TechAbhi"
+            color="indigo"
+          />
+          <StatCard
+            label="New applications"
+            value={applications.new}
+            icon={Sparkles}
+            color="sky"
+          />
+          <StatCard
+            label="Shortlisted"
+            value={applications.shortlisted}
+            icon={CheckCircle2}
+            color="emerald"
+          />
+          <StatCard
+            label="Job page views"
+            value={events.view}
+            icon={Eye}
+            note="One per browser session"
+            color="violet"
+          />
+          <StatCard
+            label="External apply clicks"
+            value={events.apply_click}
+            icon={ExternalLink}
+            note="Not confirmed applications"
+            color="amber"
+          />
         </div>
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-5 sm:p-6">
           <div>
-            <h2 className="text-lg font-black text-slate-950">Latest applications</h2>
-            <p className="mt-1 text-sm text-slate-500">Recently submitted candidate applications.</p>
+            <h2 className="text-lg font-black text-slate-950">
+              Latest applications
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Recently submitted candidate applications.
+            </p>
           </div>
-          <Link to="/recruiter/applications" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700">
+
+          <Link
+            to="/recruiter/applications"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
+          >
             View all <ArrowUpRight size={16} />
           </Link>
         </div>
@@ -260,14 +407,21 @@ export function RecruiterDashboardPage() {
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700">
                     <Users size={19} />
                   </div>
+
                   <div className="min-w-0">
-                    <p className="truncate font-bold text-slate-900">{application.candidate_name}</p>
-                    <p className="mt-1 truncate text-sm text-slate-500">{application.job_title}</p>
+                    <p className="truncate font-bold text-slate-900">
+                      {application.candidate_name || 'Candidate'}
+                    </p>
+                    <p className="mt-1 truncate text-sm text-slate-500">
+                      {application.job_title || 'Job listing'}
+                    </p>
                   </div>
                 </div>
+
                 <div className="flex items-center justify-between gap-3 sm:justify-end">
                   <span className="inline-flex items-center gap-1.5 text-xs text-slate-400">
-                    <CalendarDays size={14} /> {fmtDate(application.submitted_at)}
+                    <CalendarDays size={14} />
+                    {fmtDate(application.submitted_at)}
                   </span>
                   <ChevronRight size={17} className="text-slate-400" />
                 </div>
@@ -278,20 +432,45 @@ export function RecruiterDashboardPage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2">
-        <Link to="/recruiter/jobs" className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-indigo-200 hover:shadow-md">
-          <div className="rounded-xl bg-indigo-50 p-3 text-indigo-700"><BriefcaseBusiness size={22} /></div>
+        <Link
+          to="/recruiter/jobs"
+          className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-indigo-200 hover:shadow-md"
+        >
+          <div className="rounded-xl bg-indigo-50 p-3 text-indigo-700">
+            <BriefcaseBusiness size={22} />
+          </div>
+
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-slate-900">Manage job listings</h3>
-            <p className="mt-1 text-sm leading-5 text-slate-500">Edit, publish, close, or preview your opportunities.</p>
-            <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-indigo-700">Open jobs <ChevronRight size={15} /></span>
+            <h3 className="font-bold text-slate-900">
+              Manage job listings
+            </h3>
+            <p className="mt-1 text-sm leading-5 text-slate-500">
+              Edit, publish, close, or preview your opportunities.
+            </p>
+            <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-indigo-700">
+              Open jobs <ChevronRight size={15} />
+            </span>
           </div>
         </Link>
-        <Link to="/recruiter/applications" className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-indigo-200 hover:shadow-md">
-          <div className="rounded-xl bg-violet-50 p-3 text-violet-700"><Users size={22} /></div>
+
+        <Link
+          to="/recruiter/applications"
+          className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-indigo-200 hover:shadow-md"
+        >
+          <div className="rounded-xl bg-violet-50 p-3 text-violet-700">
+            <Users size={22} />
+          </div>
+
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-slate-900">Review candidates</h3>
-            <p className="mt-1 text-sm leading-5 text-slate-500">Review candidate details and update application stages.</p>
-            <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-indigo-700">Open applications <ChevronRight size={15} /></span>
+            <h3 className="font-bold text-slate-900">
+              Review candidates
+            </h3>
+            <p className="mt-1 text-sm leading-5 text-slate-500">
+              Review candidate details and update application stages.
+            </p>
+            <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-indigo-700">
+              Open applications <ChevronRight size={15} />
+            </span>
           </div>
         </Link>
       </section>
@@ -303,24 +482,45 @@ export function RecruiterDashboardPage() {
 
 export function RecruiterProfilePage() {
   const { me } = useOutletContext();
+
   const [form, setForm] = useState({
-    full_name: me.full_name || '',
-    phone: me.phone || '',
-    company_website: me.company_website || '',
-    company_description: me.company_description || '',
+    full_name: me?.full_name || '',
+    phone: me?.phone || '',
+    company_website: me?.company_website || '',
+    company_description: me?.company_description || '',
   });
+
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    setForm({
+      full_name: me?.full_name || '',
+      phone: me?.phone || '',
+      company_website: me?.company_website || '',
+      company_description: me?.company_description || '',
+    });
+  }, [
+    me?.full_name,
+    me?.phone,
+    me?.company_website,
+    me?.company_description,
+  ]);
+
   const updateField = (key) => (event) => {
-    setForm((previous) => ({ ...previous, [key]: event.target.value }));
+    setForm((previous) => ({
+      ...previous,
+      [key]: event.target.value,
+    }));
+
     setMsg('');
     setErr('');
   };
 
   const save = async (event) => {
     event.preventDefault();
+
     if (busy) return;
 
     setBusy(true);
@@ -333,6 +533,7 @@ export function RecruiterProfilePage() {
         body: form,
         recruiter: true,
       });
+
       setMsg('Your profile has been saved successfully.');
     } catch (error) {
       setErr(error.message || 'Unable to save your profile.');
@@ -356,20 +557,35 @@ export function RecruiterProfilePage() {
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.8fr)]">
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-100 p-5 sm:p-6">
-            <h2 className="text-lg font-black text-slate-950">Profile information</h2>
-            <p className="mt-1 text-sm text-slate-500">Update the details you can manage directly.</p>
+            <h2 className="text-lg font-black text-slate-950">
+              Profile information
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Update the details you can manage directly.
+            </p>
           </div>
 
           <form onSubmit={save} className="space-y-5 p-5 sm:p-6">
             {msg && (
-              <div role="status" className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-                <CheckCircle2 size={17} className="mt-0.5 shrink-0" /> {msg}
+              <div
+                role="status"
+                className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
+              >
+                <CheckCircle2 size={17} className="mt-0.5 shrink-0" />
+                {msg}
               </div>
             )}
+
             {err && <ErrorBanner message={err} />}
 
             <div>
-              <label className={labelClass} htmlFor="recruiter_full_name">Your full name</label>
+              <label
+                className={labelClass}
+                htmlFor="recruiter_full_name"
+              >
+                Your full name
+              </label>
+
               <input
                 id="recruiter_full_name"
                 className={fieldClass}
@@ -382,7 +598,13 @@ export function RecruiterProfilePage() {
             </div>
 
             <div>
-              <label className={labelClass} htmlFor="recruiter_phone">Phone number</label>
+              <label
+                className={labelClass}
+                htmlFor="recruiter_phone"
+              >
+                Phone number
+              </label>
+
               <input
                 id="recruiter_phone"
                 className={fieldClass}
@@ -395,9 +617,19 @@ export function RecruiterProfilePage() {
             </div>
 
             <div>
-              <label className={labelClass} htmlFor="recruiter_website">Company website</label>
+              <label
+                className={labelClass}
+                htmlFor="recruiter_website"
+              >
+                Company website
+              </label>
+
               <div className="relative">
-                <Globe size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Globe
+                  size={17}
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
                 <input
                   id="recruiter_website"
                   className={`${fieldClass} pl-10`}
@@ -410,7 +642,13 @@ export function RecruiterProfilePage() {
             </div>
 
             <div>
-              <label className={labelClass} htmlFor="recruiter_description">About your company</label>
+              <label
+                className={labelClass}
+                htmlFor="recruiter_description"
+              >
+                About your company
+              </label>
+
               <textarea
                 id="recruiter_description"
                 className={`${fieldClass} resize-y`}
@@ -419,8 +657,10 @@ export function RecruiterProfilePage() {
                 onChange={updateField('company_description')}
                 placeholder="Describe your organization, team, and work..."
               />
+
               <p className="mt-2 text-xs leading-5 text-slate-400">
-                A clear company description helps candidates understand your organization.
+                A clear company description helps candidates understand
+                your organization.
               </p>
             </div>
 
@@ -429,7 +669,11 @@ export function RecruiterProfilePage() {
               disabled={busy}
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white shadow-lg shadow-indigo-600/15 transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             >
-              {busy ? <LoaderCircle size={17} className="animate-spin" /> : <Save size={17} />}
+              {busy ? (
+                <LoaderCircle size={17} className="animate-spin" />
+              ) : (
+                <Save size={17} />
+              )}
               {busy ? 'Saving changes...' : 'Save profile'}
             </button>
           </form>
@@ -440,19 +684,33 @@ export function RecruiterProfilePage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-indigo-700 shadow-sm">
               <Building2 size={23} />
             </div>
-            <h3 className="mt-4 text-lg font-black text-slate-900">Verified account details</h3>
+
+            <h3 className="mt-4 text-lg font-black text-slate-900">
+              Verified account details
+            </h3>
+
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Your registered company name and email are managed by TechAbhi to help maintain consistent job ownership.
+              Your registered company name and email are managed by
+              TechAbhi to help maintain consistent job ownership.
             </p>
 
             <div className="mt-5 space-y-3 rounded-xl border border-white bg-white/80 p-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Company name</p>
-                <p className="mt-1 break-words text-sm font-bold text-slate-900">{me.company_name}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Company name
+                </p>
+                <p className="mt-1 break-words text-sm font-bold text-slate-900">
+                  {me?.company_name || 'Not provided'}
+                </p>
               </div>
+
               <div className="border-t border-slate-100 pt-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Registered email</p>
-                <p className="mt-1 break-all text-sm font-semibold text-slate-800">{me.email}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Registered email
+                </p>
+                <p className="mt-1 break-all text-sm font-semibold text-slate-800">
+                  {me?.email || 'Not provided'}
+                </p>
               </div>
             </div>
           </div>
@@ -462,8 +720,11 @@ export function RecruiterProfilePage() {
               <ShieldCheck size={19} className="text-emerald-600" />
               <h3 className="font-bold">Profile tip</h3>
             </div>
+
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Use a current business website and a concise company description so applicants can learn more about your organization.
+              Use a current business website and a concise company
+              description so applicants can learn more about your
+              organization.
             </p>
           </div>
         </aside>
@@ -488,9 +749,13 @@ export function RecruiterJobsPage() {
 
   const load = useCallback(async () => {
     setErr('');
+
     try {
-      const data = await api('/recruiter/jobs', { recruiter: true });
-      setJobs(data.jobs);
+      const data = await api('/recruiter/jobs', {
+        recruiter: true,
+      });
+
+      setJobs(Array.isArray(data?.jobs) ? data.jobs : []);
     } catch (error) {
       setErr(error.message || 'Unable to load your jobs.');
     }
@@ -502,6 +767,7 @@ export function RecruiterJobsPage() {
 
   const setStatus = async (job, status) => {
     if (busyId !== null) return;
+
     setBusyId(job.id);
     setErr('');
     setNote('');
@@ -512,29 +778,48 @@ export function RecruiterJobsPage() {
         body: { status },
         recruiter: true,
       });
-      setNote(`"${job.title}" status updated to ${jobStatusLabels[status] || status}.`);
+
+      setNote(
+        `"${job.title}" status updated to ${
+          jobStatusLabels[status] || status
+        }.`
+      );
+
       await load();
     } catch (error) {
-      setErr([error.message, ...(error.details || [])].join('\n'));
+      const details = Array.isArray(error.details)
+        ? error.details
+        : [];
+
+      setErr(
+        [error.message || 'Unable to update the job status.', ...details]
+          .filter(Boolean)
+          .join('\n')
+      );
     } finally {
       setBusyId(null);
     }
   };
 
   const del = async (job) => {
-    if (!window.confirm(`Delete "${job.title}"?`)) return;
     if (busyId !== null) return;
+
+    if (!window.confirm(`Delete "${job.title}"?`)) return;
 
     setBusyId(job.id);
     setErr('');
     setNote('');
 
     try {
-      await api('/recruiter/jobs/' + job.id, {
+      await api(`/recruiter/jobs/${job.id}`, {
         method: 'DELETE',
         recruiter: true,
       });
-      setJobs((previous) => previous?.filter((item) => item.id !== job.id) ?? previous);
+
+      setJobs((previous) =>
+        previous?.filter((item) => item.id !== job.id) ?? previous
+      );
+
       setNote(`"${job.title}" was deleted.`);
     } catch (error) {
       setErr(error.message || 'Unable to delete this job.');
@@ -547,6 +832,10 @@ export function RecruiterJobsPage() {
     const link = publicUrl(job);
 
     try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('Clipboard unavailable');
+      }
+
       await navigator.clipboard.writeText(link);
       setNote('Job link copied to clipboard.');
     } catch {
@@ -566,20 +855,27 @@ export function RecruiterJobsPage() {
             to="/recruiter/jobs/new"
             className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-indigo-950 shadow-lg transition hover:bg-indigo-50"
           >
-            <Plus size={17} /> New job
+            <Plus size={17} />
+            New job
           </Link>
         }
       />
 
       {note && (
-        <div role="status" className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
-          <CheckCircle2 size={17} className="mt-0.5 shrink-0" /> {note}
+        <div
+          role="status"
+          className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"
+        >
+          <CheckCircle2 size={17} className="mt-0.5 shrink-0" />
+          {note}
         </div>
       )}
 
       {err && <ErrorBanner message={err} onRetry={load} />}
 
-      {!jobs && !err && <LoadingPanel text="Loading your job listings..." />}
+      {!jobs && !err && (
+        <LoadingPanel text="Loading your job listings..." />
+      )}
 
       {jobs?.length === 0 && !err && (
         <EmptyState
@@ -599,15 +895,22 @@ export function RecruiterJobsPage() {
               icon={BriefcaseBusiness}
               color="indigo"
             />
+
             <StatCard
               label="Published"
-              value={jobs.filter((job) => job.status === 'published').length}
+              value={
+                jobs.filter((job) => job.status === 'published').length
+              }
               icon={CheckCircle2}
               color="emerald"
             />
+
             <StatCard
               label="Applications received"
-              value={jobs.reduce((sum, job) => sum + (Number(job.app_count) || 0), 0)}
+              value={jobs.reduce(
+                (sum, job) => sum + (Number(job.app_count) || 0),
+                0
+              )}
               icon={Users}
               color="violet"
             />
@@ -615,9 +918,12 @@ export function RecruiterJobsPage() {
 
           <section className="space-y-4">
             <div>
-              <h2 className="text-lg font-black text-slate-950">Your listings</h2>
+              <h2 className="text-lg font-black text-slate-950">
+                Your listings
+              </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Manage each job's status, preview its details, or review applications.
+                Manage each job's status, preview its details, or review
+                applications.
               </p>
             </div>
 
@@ -635,13 +941,16 @@ export function RecruiterJobsPage() {
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h2 className="break-words text-lg font-black text-slate-950">{job.title}</h2>
+                          <h2 className="break-words text-lg font-black text-slate-950">
+                            {job.title}
+                          </h2>
                           <StatusBadge status={job.status} />
                         </div>
 
                         <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500">
                           <span className="inline-flex items-center gap-1.5">
-                            <Users size={15} /> {job.app_count ?? 0} applications
+                            <Users size={15} />
+                            {job.app_count ?? 0} applications
                           </span>
                         </p>
                       </div>
@@ -649,8 +958,12 @@ export function RecruiterJobsPage() {
                       <div className="flex shrink-0 items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
                         <FileText size={17} className="text-indigo-600" />
                         <div>
-                          <p className="text-lg font-black leading-5 text-slate-900">{job.app_count ?? 0}</p>
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Applicants</p>
+                          <p className="text-lg font-black leading-5 text-slate-900">
+                            {job.app_count ?? 0}
+                          </p>
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                            Applicants
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -660,72 +973,99 @@ export function RecruiterJobsPage() {
                         className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
                         to={`/recruiter/jobs/${job.id}/edit`}
                       >
-                        <FileText size={15} /> Edit
+                        <FileText size={15} />
+                        Edit
                       </Link>
 
                       <Link
                         className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
                         to={`/recruiter/jobs/${job.id}/preview`}
                       >
-                        <Eye size={15} /> Preview
+                        <Eye size={15} />
+                        Preview
                       </Link>
 
                       <Link
                         className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
-                        to={`/recruiter/applications?job=${job.id}`}
+                        to={`/recruiter/applications?job=${encodeURIComponent(
+                          job.id
+                        )}`}
                       >
-                        <Users size={15} /> Applications
+                        <Users size={15} />
+                        Applications
                       </Link>
 
                       {job.status !== 'published' ? (
                         <button
                           type="button"
                           disabled={busyId === job.id}
-                          className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+                          className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                           onClick={() => setStatus(job, 'published')}
                         >
-                          {busyId === job.id ? <LoaderCircle size={15} className="animate-spin" /> : <ArrowUpRight size={15} />}
-                          {job.status === 'closed' ? 'Reopen job' : 'Publish job'}
+                          {busyId === job.id ? (
+                            <LoaderCircle
+                              size={15}
+                              className="animate-spin"
+                            />
+                          ) : (
+                            <ArrowUpRight size={15} />
+                          )}
+                          {job.status === 'closed'
+                            ? 'Reopen job'
+                            : 'Publish job'}
                         </button>
                       ) : (
                         <>
                           <button
                             type="button"
                             disabled={busyId === job.id}
-                            className="inline-flex items-center gap-2 rounded-xl border border-amber-200 px-3.5 py-2.5 text-sm font-semibold text-amber-800 transition hover:bg-amber-50 disabled:opacity-50"
+                            className="inline-flex items-center gap-2 rounded-xl border border-amber-200 px-3.5 py-2.5 text-sm font-semibold text-amber-800 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
                             onClick={() => setStatus(job, 'draft')}
                           >
-                            <FileText size={15} /> Unpublish
+                            <FileText size={15} />
+                            Unpublish
                           </button>
+
                           <button
                             type="button"
                             disabled={busyId === job.id}
-                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                             onClick={() => setStatus(job, 'closed')}
                           >
-                            <XCircle size={15} /> Close
+                            <XCircle size={15} />
+                            Close
                           </button>
+
                           <button
                             type="button"
                             className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 px-3.5 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50"
                             onClick={() => copy(job)}
                           >
-                            <Copy size={15} /> Copy link
+                            <Copy size={15} />
+                            Copy link
                           </button>
                         </>
                       )}
 
-                      {job.status !== 'published' && job.app_count === 0 && (
-                        <button
-                          type="button"
-                          disabled={busyId === job.id}
-                          className="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-3.5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
-                          onClick={() => del(job)}
-                        >
-                          {busyId === job.id ? <LoaderCircle size={15} className="animate-spin" /> : <Trash2 size={15} />}
-                          Delete
-                        </button>
-                      )}
+                      {job.status !== 'published' &&
+                        Number(job.app_count || 0) === 0 && (
+                          <button
+                            type="button"
+                            disabled={busyId === job.id}
+                            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-3.5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            onClick={() => del(job)}
+                          >
+                            {busyId === job.id ? (
+                              <LoaderCircle
+                                size={15}
+                                className="animate-spin"
+                              />
+                            ) : (
+                              <Trash2 size={15} />
+                            )}
+                            Delete
+                          </button>
+                        )}
                     </div>
                   </div>
 
