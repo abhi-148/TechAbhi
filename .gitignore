@@ -6,3 +6,8 @@ dist/
 build/
 coverage/
 .DS_Store
+*.dump
+*.sqlite
+*.db
+# Uploaded resumes and user files
+backend/uploads/
